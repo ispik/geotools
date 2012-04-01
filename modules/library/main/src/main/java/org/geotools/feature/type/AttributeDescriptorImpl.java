@@ -18,6 +18,7 @@ package org.geotools.feature.type;
 
 import java.util.Map;
 
+import com.vividsolutions.jts.geom.Geometry;
 import org.geotools.resources.Classes;
 import org.geotools.util.Utilities;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -60,8 +61,14 @@ public class AttributeDescriptorImpl extends PropertyDescriptorImpl
 			return false;
 		
 		AttributeDescriptorImpl d = (AttributeDescriptorImpl)o;
-	
-		return super.equals(o) && Utilities.deepEquals( defaultValue, d.defaultValue );
+	    if (!super.equals(o)) {
+            return false;
+        }
+        if (defaultValue instanceof Geometry) {
+            return d.defaultValue instanceof Geometry && ((Geometry) defaultValue).equalsExact((Geometry) d.defaultValue);
+        } else {
+            return Utilities.deepEquals(defaultValue, d.defaultValue);
+        }
 	}	
 	
 	public String toString() {

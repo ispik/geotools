@@ -235,18 +235,18 @@ public class AttributeTypeBuilder {
 		description = null;
 		isIdentifiable = false;
 		binding = null;
-		defaultValue = null;
 		superType = null;
 		crs = null;
 		length = null;
 		isCrsSet = false;
-		isDefaultValueSet = false;
 	}
 	
 	protected void resetDescriptorState() {
 		minOccurs = null;
 		maxOccurs = null;
 		isNillable = true;
+        defaultValue = null;
+        isDefaultValueSet = false;
 		userData = new HashMap();
 	}
 	
@@ -368,6 +368,10 @@ public class AttributeTypeBuilder {
 		this.defaultValue = defaultValue;
 		isDefaultValueSet = true;
 	}
+    
+    public boolean isDefaultValueSet() {
+        return isDefaultValueSet;
+    }
 	
 	public AttributeTypeBuilder binding(Class binding) {
 		setBinding(binding);
@@ -597,7 +601,7 @@ public class AttributeTypeBuilder {
     	}
     }
 	private Object defaultValue(){
-	    if( defaultValue == null && !isNillable && binding != null){
+	    if( !isDefaultValueSet && defaultValue == null && !isNillable && binding != null){
 	        defaultValue = DataUtilities.defaultValue( binding );
 	    }
 	    return defaultValue;
