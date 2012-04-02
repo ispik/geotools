@@ -64,6 +64,7 @@ public class FeatureLayer extends StyleLayer {
     protected boolean drawLabels = true;
     protected Double labelMinScaleDenominator;
     protected Double labelMaxScaleDenominator;
+    protected Float labelOpacity;
 
     /**
      * Creates a new instance of FeatureLayer
@@ -213,6 +214,14 @@ public class FeatureLayer extends StyleLayer {
     
     public void setLabelMaxScaleDenominator(Double labelMaxScaleDenominator) {
         this.labelMaxScaleDenominator = labelMaxScaleDenominator;
+    }
+
+    public Float getLabelOpacity() {
+        return labelOpacity;
+    }
+
+    public void setLabelOpacity(Float labelOpacity) {
+        this.labelOpacity = labelOpacity;
     }
 
     @Override

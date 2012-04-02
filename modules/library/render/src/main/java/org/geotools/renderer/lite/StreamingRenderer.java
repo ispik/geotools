@@ -17,6 +17,7 @@
 package org.geotools.renderer.lite;
 
 import java.awt.AlphaComposite;
+import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -812,14 +813,14 @@ public class StreamingRenderer implements GTRenderer {
                         FeatureLayer featureLayer = (FeatureLayer) layer;
                         drawLabels = featureLayer.getDrawLabels() && featureLayer.getDrawLabelsAtScale(scaleDenominator);
                         if (drawLabels) {
-                            labelCache.startLayer(i + "");
+                            labelCache.startLayer(i + "", featureLayer.getLabelOpacity());
                         }
                     }
                     try {
 
                         // extract the feature type stylers from the style object
                         // and process them
-                        processStylers(graphics, currLayer, worldToScreenTransform,
+                        processStylersWithTransparency(graphics, currLayer, worldToScreenTransform,
                                 destinationCrs, mapExtent, screenSize, i + "", drawLabels);
                     } catch (Throwable t) {
                         fireErrorEvent(t);
@@ -1892,6 +1893,23 @@ public class StreamingRenderer implements GTRenderer {
             }
         }
         return features;
+    }
+
+    private void processStylersWithTransparency(Graphics2D graphics,
+            MapLayer currLayer, AffineTransform at,
+            CoordinateReferenceSystem destinationCrs, Envelope mapArea,
+            Rectangle screenSize, String layerId,
+            boolean drawLabels) throws Exception {
+        if (currLayer.toLayer().getLayerOpacity() != null && currLayer.toLayer().getLayerOpacity() < 1.0) {
+            DelayedBackbufferGraphic tmpGraphics = new DelayedBackbufferGraphic(graphics, screenSize);
+            processStylers(tmpGraphics, currLayer, at, destinationCrs, mapArea, screenSize,
+                    layerId, drawLabels);
+            requests.put(new ApplyLaterTransparencyRequest(graphics, tmpGraphics, currLayer.toLayer().getLayerOpacity()));
+        } else {
+            processStylers(graphics, currLayer, at, destinationCrs, mapArea, screenSize,
+                    layerId, drawLabels);
+        }
+
     }
 
     /**
@@ -3357,7 +3375,7 @@ public class StreamingRenderer implements GTRenderer {
      * A request sent to the painting thread 
      * @author aaime
      */
-    abstract class RenderingRequest {
+    abstract static class RenderingRequest {
         abstract void execute();
     }
     
@@ -3407,7 +3425,7 @@ public class StreamingRenderer implements GTRenderer {
      * @author aaime
      *
      */
-    class MergeLayersRequest extends RenderingRequest {
+    static class MergeLayersRequest extends RenderingRequest {
         Graphics2D graphics;
         LiteFeatureTypeStyle fts_array[];
         
@@ -3420,11 +3438,17 @@ public class StreamingRenderer implements GTRenderer {
 
         @Override
         void execute() {
+            if(graphics instanceof DelayedBackbufferGraphic) {
+                ((DelayedBackbufferGraphic) graphics).init();
+            }
             graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
             for (int t = 0; t < fts_array.length; t++) {
                 // first fts won't have an image, it's using the user provided graphics
                 // straight, so we don't need to compose it back in.
                 final Graphics2D ftsGraphics = fts_array[t].graphics;
+                if (graphics == ftsGraphics) {
+                    continue;
+                }
                 if (ftsGraphics instanceof DelayedBackbufferGraphic) {
                     final BufferedImage image = ((DelayedBackbufferGraphic) ftsGraphics).image;
                     // we may have not found anything to paint, in that case the delegate
@@ -3439,6 +3463,36 @@ public class StreamingRenderer implements GTRenderer {
         }
     }
     
+    private static class ApplyLaterTransparencyRequest extends RenderingRequest {
+        private ApplyLaterTransparencyRequest(Graphics2D graphics, DelayedBackbufferGraphic tmpGraphics, float opacity) {
+            this.graphics = graphics;
+            this.tmpGraphics = tmpGraphics;
+            this.opacity = opacity;
+        }
+
+        @Override
+        void execute() {
+            tmpGraphics.dispose();
+            if (tmpGraphics.image != null) {
+                Composite oldAlphaComposite = graphics.getComposite();
+                graphics.setComposite(AlphaComposite.getInstance(
+                        AlphaComposite.SRC_OVER, opacity)
+                );
+                try {
+                    graphics.drawImage(tmpGraphics.image, 0, 0, null);
+                } finally {
+                    graphics.setComposite(oldAlphaComposite);
+                }
+            }
+
+        }
+
+        private final Graphics2D graphics;
+        private final DelayedBackbufferGraphic tmpGraphics;
+        private float opacity;
+    }
+
+
     /**
      * A request to render a raster
      * @author aaime
@@ -3482,6 +3536,9 @@ public class StreamingRenderer implements GTRenderer {
                         originalMapExtent, screenSize, worldToScreen, java2dHints);
 
                 try {
+                    if (graphics instanceof DelayedBackbufferGraphic) {
+                        ((DelayedBackbufferGraphic) graphics).init();
+                    }
                     gcr.paint(graphics, coverage, symbolizer);
                 } finally {
                     // we need to try and dispose this coverage if was created on purpose for
@@ -3548,7 +3605,7 @@ public class StreamingRenderer implements GTRenderer {
      * Marks the end of the request flow, instructs the painting thread to exit
      * @author Andrea Aime - OpenGeo
      */
-    class EndRequest extends RenderingRequest {
+    static class EndRequest extends RenderingRequest {
 
         @Override
         void execute() {
