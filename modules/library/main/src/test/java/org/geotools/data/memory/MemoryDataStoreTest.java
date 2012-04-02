@@ -51,6 +51,7 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.IllegalAttributeException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -1276,5 +1277,29 @@ public class MemoryDataStoreTest extends DataTestCase {
             Thread.sleep( 15 );            
         } while ( then > System.currentTimeMillis() - 515 );     
         assertFalse(isLocked("road", "road.rd1"));
+    }
+    
+    public void testGetBoundsSupportsFeaturesWithoutGeometry() throws Exception {
+        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(data.getSchema("road"));
+        featureBuilder.init(roadFeatures[0]);
+        featureBuilder.set("geom", null);
+        SimpleFeature feature = featureBuilder.buildFeature("road.rd0");
+        data.addFeature(feature);
+        
+        SimpleFeatureSource road = data.getFeatureSource("road");
+        assertEquals(roadBounds, road.getBounds(Query.ALL));
+    }
+    
+    public void testGetBoundsSupportsEmptyBounds() throws Exception {
+        SimpleFeatureType type = DataUtilities.createType(getName() + ".test",
+                "id:0,geom:LineString,name:String");
+        SimpleFeature[] features = new SimpleFeature[3];
+        features[0] = SimpleFeatureBuilder.build(type, new Object[] {1, null, "r1"}, "test.f1");
+        features[1] = SimpleFeatureBuilder.build(type, new Object[] {2, null, "r2"}, "test.f2");
+        features[2] = SimpleFeatureBuilder.build(type, new Object[] {3, null, "r3"}, "test.f3");
+        data.addFeatures(features);
+
+        SimpleFeatureSource featureSource = data.getFeatureSource("test");
+        assertTrue(featureSource.getBounds(Query.ALL).isEmpty());
     }
 }
