@@ -113,13 +113,14 @@ public class ReprojectFeatureReader implements DelegatingFeatureReader<SimpleFea
                                                  .getCoordinateReferenceSystem();
 
         if (cs.equals(original)) {
-            throw new IllegalArgumentException("CoordinateSystem " + cs
-                + " already used (check before using wrapper)");
+            schema = type;
+            transformer = null;
+        } else {
+            schema = FeatureTypes.transform(type, cs);
+            transformer.setMathTransform(CRS.findMathTransform(original, cs, true));
         }
         
-        this.schema = FeatureTypes.transform(type, cs);
         this.reader = reader;
-        transformer.setMathTransform(CRS.findMathTransform(original, cs, true));
     }
 
     public FeatureReader<SimpleFeatureType, SimpleFeature> getDelegate() {
@@ -169,6 +170,10 @@ public class ReprojectFeatureReader implements DelegatingFeatureReader<SimpleFea
         }
 
         SimpleFeature next = reader.next();
+        if (transformer == null) {
+            return next;
+        }
+        
         Object[] attributes = next.getAttributes().toArray();
 
         try {
