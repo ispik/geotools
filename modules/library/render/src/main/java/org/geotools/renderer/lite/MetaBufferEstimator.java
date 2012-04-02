@@ -280,9 +280,19 @@ public class MetaBufferEstimator extends FilterAttributeExtractor implements Sty
                 for (GraphicalSymbol gs : gr.graphicalSymbols()) {
                     if(gs instanceof ExternalGraphic) {
                         ExternalGraphic eg = (ExternalGraphic) gs;
-                        URL location = eg.getLocation();
+                        String location = eg.getLocation().toExternalForm();
+                        if (location == null) {
+                            Icon icon = eg.getInlineContent();
+                            if(icon != null) {
+                                int size = Math.max(icon.getIconHeight(), icon.getIconWidth());
+                                if(size > buffer) {
+                                    buffer = size;
+                                }
+                                return;
+                            }
+                        }
                         // expand embedded cql expression
-                        Expression expanded = ExpressionExtractor.extractCqlExpressions(location.toExternalForm());
+                        Expression expanded = ExpressionExtractor.extractCqlExpressions(location);
                         // if not a literal there is an attribute dependency
                         if(!(expanded instanceof Literal)) {
                             estimateAccurate = false;
