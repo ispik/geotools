@@ -799,7 +799,7 @@ public class ShapefileDataStoreTest extends TestCaseSupport {
         Filter cf = ff
                 .equals(ff.property("STATE_NAME"), ff.literal("Illinois"));
         query = new DefaultQuery(s.getSchema().getTypeName(), cf,
-                new String[] { "the_geom" });
+                Query.ALL_NAMES);
         reader = s.getFeatureReader(s.getSchema().getTypeName(), query);
         assertEquals(s.getSchema(), reader.getFeatureType());
         reader.close();
