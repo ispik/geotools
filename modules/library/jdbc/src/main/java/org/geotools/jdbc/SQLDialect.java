@@ -122,7 +122,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  */
 public abstract class SQLDialect {
     protected static final Logger LOGGER = Logging.getLogger(SQLDialect.class);
-    
+
     /**
      * The basic filter capabilities all databases should have
      */
@@ -130,13 +130,13 @@ public abstract class SQLDialect {
         {
             addAll(FilterCapabilities.LOGICAL_OPENGIS);
             addAll(FilterCapabilities.SIMPLE_COMPARISONS_OPENGIS);
-            
+
             //simple arithmetic
             addType(Add.class);
             addType(Subtract.class);
             addType(Multiply.class);
             addType(Divide.class);
-            
+
             //simple comparisons
             addType(PropertyIsNull.class);
             addType(PropertyIsBetween.class);
@@ -146,12 +146,12 @@ public abstract class SQLDialect {
             addType(PropertyIsLike.class);
         }
     };
-    
+
     /**
      * The datastore using the dialect
      */
     protected JDBCDataStore dataStore;
-    
+
     /**
      * Creates the dialect.
      * @param dataStore The dataStore using the dialect.
@@ -159,18 +159,18 @@ public abstract class SQLDialect {
     protected SQLDialect( JDBCDataStore dataStore ) {
         this.dataStore = dataStore;
     }
-    
+
     /**
      * Initializes a newly created database connection.
      * <p>
-     * Subclasses should override this method if there is some additional action 
+     * Subclasses should override this method if there is some additional action
      * that needs to be taken when a new connection to the database is created. The
      * default implementation does nothing.
      * </p>
      * @param cx The new database connection.
      */
     public void initializeConnection( Connection cx ) throws SQLException {
-        
+
     }
     /**
      * Determines if the specified table should be included in those published
@@ -194,7 +194,7 @@ public abstract class SQLDialect {
         throws SQLException {
         return true;
     }
-    
+
     /**
      * Registers the sql type name to java type mappings that the dialect uses when
      * reading and writing objects to and from the database.
@@ -243,15 +243,15 @@ public abstract class SQLDialect {
      * the <tt>metadata</tt> object to allow the column to be mapped via teh regular type mapping
      * heuristics.
      * </p>
-     * 
+     *
      * @param columnMetaData The column metdata.
      * @param metadata The column metadata object that collections mapping information.
      * @param cx The database connection, not to be closed.
      */
-    public void handleUserDefinedType(ResultSet columnMetaData, ColumnMetadata metadata, Connection cx) 
+    public void handleUserDefinedType(ResultSet columnMetaData, ColumnMetadata metadata, Connection cx)
         throws SQLException {
     }
-    
+
     /**
      * Registers the sql type to java type mappings that the dialect uses when
      * reading and writing objects to and from the database.
@@ -268,7 +268,7 @@ public abstract class SQLDialect {
         mappings.put(new Integer(Types.LONGVARCHAR), String.class);
         mappings.put(new Integer(Types.NVARCHAR), String.class);
         mappings.put(new Integer(Types.NCHAR), String.class);
-        
+
         mappings.put(new Integer(Types.BIT), Boolean.class);
         mappings.put(new Integer(Types.BOOLEAN), Boolean.class);
 
@@ -288,11 +288,11 @@ public abstract class SQLDialect {
         mappings.put(new Integer(Types.DATE), Date.class);
         mappings.put(new Integer(Types.TIME), Time.class);
         mappings.put(new Integer(Types.TIMESTAMP), Timestamp.class);
-        
+
         mappings.put(new Integer(Types.BLOB), byte[].class);
         mappings.put(new Integer(Types.BINARY), byte[].class);
         mappings.put(new Integer(Types.CLOB), String.class);
-        
+
         mappings.put(new Integer(Types.VARBINARY), byte[].class);
 
         //subclasses should extend to provide additional
@@ -332,14 +332,14 @@ public abstract class SQLDialect {
         mappings.put(Time.class, new Integer(Types.TIME));
         mappings.put(java.util.Date.class, new Integer(Types.TIMESTAMP));
         mappings.put(Timestamp.class, new Integer(Types.TIMESTAMP));
-        
+
         mappings.put(byte[].class, new Integer(Types.BLOB));
 
         //subclasses should extend and provide additional
     }
 
     /**
-     * Registers any overrides that should occur when mapping an integer sql type 
+     * Registers any overrides that should occur when mapping an integer sql type
      * value to an underlying sql type name.
      * <p>
      * The default implementation of this method does nothing. Subclasses should override
@@ -352,15 +352,15 @@ public abstract class SQLDialect {
      */
     public void registerSqlTypeToSqlTypeNameOverrides(Map<Integer,String> overrides) {
     }
-    
+
     /**
      * Registers the set of aggregate functions the dialect is capable of handling.
      * <p>
      * Aggregate functions are handled via visitors of special types. The <param>aggregates</param>
-     * maps the class of the visitor to the associated function name. This base implementation 
+     * maps the class of the visitor to the associated function name. This base implementation
      * handles some of the well known mappings:
      * <ul>
-     * <li>{@link UniqueVisitor} -> "unique" <li> 
+     * <li>{@link UniqueVisitor} -> "unique" <li>
      * <li>{@link CountVisitor} -> "count" <li>
      * <li>{@link MaxVisitor} -> "max" <li>
      * <li>{@link MinVisitor} -> "min" <li>
@@ -377,7 +377,7 @@ public abstract class SQLDialect {
         aggregates.put( MaxVisitor.class, "max");
         aggregates.put( SumVisitor.class, "sum");
     }
-    
+
     /**
      * Returns the java class mapping for a particular column.
      * <p>
@@ -444,7 +444,7 @@ public abstract class SQLDialect {
      * {@link #getNameEscape()}. Subclasses usually dont override this method
      * and instead override {@link #getNameEscape()}.
      * </p>
-     * 
+     *
      * @deprecated use {@link #encodeColumnName(String, String, StringBuffer)}.
      */
     public final void encodeColumnName(String raw, StringBuffer sql) {
@@ -571,13 +571,13 @@ public abstract class SQLDialect {
         Connection cx) throws SQLException {
         return null;
     }
-    
+
     /**
      * Turns the specified srid into a {@link CoordinateReferenceSystem}, or returns <code>null</code> if not possible.
      * <p>
-     * The implementation might just use <code>CRS.decode("EPSG:" + srid)</code>, but most spatial databases will have 
+     * The implementation might just use <code>CRS.decode("EPSG:" + srid)</code>, but most spatial databases will have
      * their own SRS database that can be queried as well.</p>
-     * <p>As a rule of thumb you should override this method if your spatial database uses codes that are 
+     * <p>As a rule of thumb you should override this method if your spatial database uses codes that are
      * not part of the EPSG standard database, of if for some reason you deem it preferable to use
      * your database definition instead of an official EPSG one.</p>
      * <p>Most overrides will try out to decode the official EPSG code first, and fall back on
@@ -587,7 +587,7 @@ public abstract class SQLDialect {
      */
     public CoordinateReferenceSystem createCRS(int srid, Connection cx) throws SQLException {
         try {
-            return CRS.decode("EPSG:" + srid);
+            return CRS.decode("EPSG:" + srid, isForceLongitudeLatitudeAxisOrder());
         } catch(Exception e) {
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Could not decode " + srid + " using the built-in EPSG database");
@@ -595,14 +595,14 @@ public abstract class SQLDialect {
             return null;
         }
     }
-    
+
     /**
-     * Returns the bounds of all geometry columns in the layer using any approach that proves 
-     * to be faster than the plain bounds aggregation 
+     * Returns the bounds of all geometry columns in the layer using any approach that proves
+     * to be faster than the plain bounds aggregation
      * (e.g., better than the "plain select extent(geom) from table" on PostGIS),
      * or null if none exists or the fast method has not been enabled (e.g., if the fast method is
      * just an estimate of the bounds you probably want the user to enable it manually)
-     * 
+     *
      * @param schema
      *            The database schema, if any, or null
      * @param featureType
@@ -622,7 +622,7 @@ public abstract class SQLDialect {
      * This method must also be sure to properly encode the name of the column
      * with the {@link #encodeColumnName(String, StringBuffer)} function.
      * </p>
-     * @param tableName 
+     * @param tableName
      */
     public abstract void encodeGeometryEnvelope(String tableName, String geometryColumn, StringBuffer sql);
 
@@ -672,7 +672,7 @@ public abstract class SQLDialect {
      * This default implementation simply uses the column name without any
      * wrapping function, subclasses must override.
      * </p>
-     * 
+     *
      * @deprecated use {@link #encodeGeometryColumn(GeometryDescriptor, String, int, StringBuffer)}
      */
     public final void encodeGeometryColumn(GeometryDescriptor gatt, int srid, StringBuffer sql) {
@@ -687,8 +687,8 @@ public abstract class SQLDialect {
     * <code>asText</code>, or <code>asWKB</code> when fetching a geometry.
     * </p>
     * <p>
-    * This method must also be sure to properly encode the name of the column with the 
-    * {@link #encodeColumnName(String, String, StringBuffer)} function. 
+    * This method must also be sure to properly encode the name of the column with the
+    * {@link #encodeColumnName(String, String, StringBuffer)} function.
     * </p>
     * <p>
     * Example:
@@ -713,8 +713,8 @@ public abstract class SQLDialect {
     /**
      * Encodes a generalized geometry using a DB provided SQL function if available
      * If not supported, subclasses should not implement
-     * Only called if {@link Hints#GEOMETRY_GENERALIZATION is supported}  
-     * 
+     * Only called if {@link Hints#GEOMETRY_GENERALIZATION is supported}
+     *
      * Example:
      * </p>
      * <pre>
@@ -730,7 +730,7 @@ public abstract class SQLDialect {
      * <p>
      * @deprecated use {@link #encodeGeometryColumnGeneralized(GeometryDescriptor, String, int, StringBuffer, Double)}
      */
-    
+
     public final void encodeGeometryColumnGeneralized(GeometryDescriptor gatt, int srid,StringBuffer sql, Double distance) {
         throw new UnsupportedOperationException("Geometry generalization not supported");
     }
@@ -739,13 +739,13 @@ public abstract class SQLDialect {
         StringBuffer sql, Double distance) {
         throw new UnsupportedOperationException("Geometry generalization not supported");
     }
-    
-    
+
+
     /**
-     * 
+     *
      * Encodes a simplified geometry using a DB provided SQL function if available
      * If not supported, subclasses should not implement
-     * Only called if {@link Hints#GEOMETRY_SIMPLIFICATION is supported}  
+     * Only called if {@link Hints#GEOMETRY_SIMPLIFICATION is supported}
      * @see SQLDialect#encodeGeometryColumnGeneralized(GeometryDescriptor, StringBuffer, Double)
      * @deprecated use {@link #encodeGeometryColumnSimplified(GeometryDescriptor, String, int, StringBuffer, Double)}
      */
@@ -787,27 +787,27 @@ public abstract class SQLDialect {
      */
     public abstract Geometry decodeGeometryValue(GeometryDescriptor descriptor, ResultSet rs,
         String column, GeometryFactory factory, Connection cx ) throws IOException, SQLException;
-    
+
     /**
-     * Decodes a geometry value from the result of a query specifying the column 
+     * Decodes a geometry value from the result of a query specifying the column
      * as an index.
      * <p>
-     * See {@link #decodeGeometryValue(GeometryDescriptor, ResultSet, String, GeometryFactory)} 
+     * See {@link #decodeGeometryValue(GeometryDescriptor, ResultSet, String, GeometryFactory)}
      * for a more in depth description.
      * </p>
      * @see {@link #decodeGeometryValue(GeometryDescriptor, ResultSet, String, GeometryFactory)}.
      */
     public Geometry decodeGeometryValue(GeometryDescriptor descriptor, ResultSet rs,
         int column, GeometryFactory factory, Connection cx ) throws IOException, SQLException {
-        
+
         String columnName = rs.getMetaData().getColumnName( column );
         return decodeGeometryValue(descriptor, rs, columnName, factory, cx);
     }
-    
+
     /**
      * Encodes the primary key definition in a CREATE TABLE statement.
      * <p>
-     * Subclasses should override this method if need be, the default implementation does the 
+     * Subclasses should override this method if need be, the default implementation does the
      * following:
      * <pre>
      *   <code>
@@ -824,7 +824,7 @@ public abstract class SQLDialect {
     }
 
     /**
-     * Encodes the syntax for a join between two tables. 
+     * Encodes the syntax for a join between two tables.
      */
     public void encodeJoin(Type joinType, StringBuffer sql) {
         switch(joinType) {
@@ -847,9 +847,9 @@ public abstract class SQLDialect {
      * @param att The attribute corresponding to the column.
      */
     public void encodePostColumnCreateTable(AttributeDescriptor att, StringBuffer sql) {
-        
+
     }
-    
+
     /**
      * Encodes anything post a CREATE TABLE statement.
      * <p>
@@ -862,9 +862,9 @@ public abstract class SQLDialect {
     }
 
     /**
-     * Encodes anything after the SELECT clause and before the FROM clause. 
+     * Encodes anything after the SELECT clause and before the FROM clause.
      * <p>
-     * This method does not nothing, subclass may override to add additional columns. 
+     * This method does not nothing, subclass may override to add additional columns.
      * </p>
      * @param featureType The feature type being queried.
      */
@@ -895,14 +895,14 @@ public abstract class SQLDialect {
      * instantiated from the connection must be closed.
      * </p>
      * @param schemaName The name of the schema, may be <code>null</code>.
-     * @param featureType The feature type that has just been created on the database. 
+     * @param featureType The feature type that has just been created on the database.
      * @param cx Database connection.
      *
      */
     public void postCreateTable(String schemaName, SimpleFeatureType featureType, Connection cx)
         throws SQLException, IOException {
     }
-    
+
     /**
      * Callback which executes after an attribute descriptor has been built from a table column.
      * <p>
@@ -917,11 +917,11 @@ public abstract class SQLDialect {
      * @param schemaName The name of the database scheam containing the table containing the column
      * @param cx The database connection.
      */
-    public void postCreateAttribute(AttributeDescriptor att, String tableName, String schemaName, 
+    public void postCreateAttribute(AttributeDescriptor att, String tableName, String schemaName,
         Connection cx ) throws SQLException {
-        
+
     }
-    
+
     /**
      * Callback which executes after a feature type has been built from a database table.
      * <p>
@@ -932,31 +932,31 @@ public abstract class SQLDialect {
      * @param schemaName The name of the database scheam containing the table containing the column
      * @param cx The database connection.
      */
-    public void postCreateFeatureType(SimpleFeatureType featureType, DatabaseMetaData metadata, 
-        String schemaName, Connection cx) 
+    public void postCreateFeatureType(SimpleFeatureType featureType, DatabaseMetaData metadata,
+        String schemaName, Connection cx)
         throws SQLException {
-        
+
     }
 
     /**
      * Controls whether keys are looked up post or pre insert.
      * <p>
      * When a row is inserted into a table, and a key is automatically generated
-     * it can be looked up before the insert occurs, or after the insert has been made. 
-     * Returning <code>false</code> will cause the lookup to occur before the insert 
+     * it can be looked up before the insert occurs, or after the insert has been made.
+     * Returning <code>false</code> will cause the lookup to occur before the insert
      * via {@link #getNextAutoGeneratedValue(String, String, String, Connection)}.
-     * Returning <code>true</code> will cause the lookup to occur after the insert via 
+     * Returning <code>true</code> will cause the lookup to occur after the insert via
      * {@link #getLastAutoGeneratedValue(String, String, String, Connection)}.
      * </p>
      * <p>
      * Subclasses returning false should implement:
-     * <ul> 
+     * <ul>
      * <li>{@link #getNextAutoGeneratedValue(String, String, String, Connection)}
-     * </ul> 
+     * </ul>
      * </p>
      * <p>
      * Subclasses returning true should implement:
-     * <ul> 
+     * <ul>
      * <li>{@link #getLastAutoGeneratedValue(String, String, String, Connection)}
      * </ul>
      * </p>
@@ -964,11 +964,11 @@ public abstract class SQLDialect {
     public boolean lookupGeneratedValuesPostInsert() {
         return false;
     }
-    
+
     /**
      * Obtains the next value of an auto generated column.
      * <p>
-     * Implementations should determine the next value of a column for which 
+     * Implementations should determine the next value of a column for which
      * values are automatically generated by the database.
      * </p>
      * <p>
@@ -995,7 +995,7 @@ public abstract class SQLDialect {
      * Obtains the last value of an auto generated column.
      * <p>
      * This method is only called when {@link #lookupGeneratedValuesPostInsert()} returns true.
-     * Implementations should determine the previous value of a column for which was automatically 
+     * Implementations should determine the previous value of a column for which was automatically
      * generated by the database.
      * </p>
      * <p>
@@ -1016,8 +1016,8 @@ public abstract class SQLDialect {
     public Object getLastAutoGeneratedValue(String schemaName, String tableName,
         String columnName, Connection cx) throws SQLException {
         return null;
-    } 
-    
+    }
+
     /**
      * Determines the name of the sequence (if any) which is used to increment
      * generate values for a table column.
@@ -1033,18 +1033,18 @@ public abstract class SQLDialect {
      * @param tableName The table name.
      * @param columnName The column name.
      * @param cx The database connection.
-     * 
+     *
      */
     public String getSequenceForColumn(String schemaName, String tableName, String columnName,
             Connection cx) throws SQLException {
         return null;
     }
-    
+
     /**
-     * Obtains the next value of a sequence, incrementing the sequence to the next state in the 
+     * Obtains the next value of a sequence, incrementing the sequence to the next state in the
      * process.
      * <p>
-     * Implementations should determine the next value of a column for which 
+     * Implementations should determine the next value of a column for which
      * values are automatically generated by the database.
      * </p>
      * <p>
@@ -1061,20 +1061,20 @@ public abstract class SQLDialect {
      *
      * @return The next value of the sequence, or <code>null</code>.
      */
-    public Object getNextSequenceValue(String schemaName, String sequenceName, Connection cx ) 
+    public Object getNextSequenceValue(String schemaName, String sequenceName, Connection cx )
         throws SQLException {
         return null;
     }
-    
+
     /**
      * Returns true if this dialect can encode both {@linkplain Query#getStartIndex()}
-     * and {@linkplain Query#getMaxFeatures()} into native SQL. 
+     * and {@linkplain Query#getMaxFeatures()} into native SQL.
      * @return
      */
     public boolean isLimitOffsetSupported() {
         return false;
     }
-    
+
     /**
      * Alters the query provided so that limit and offset are natively dealt with. This might mean
      * simply appending some extra directive to the query, or wrapping it into a bigger one.
@@ -1085,31 +1085,31 @@ public abstract class SQLDialect {
     public void applyLimitOffset(StringBuffer sql, int limit, int offset) {
         throw new UnsupportedOperationException("Ovveride this method when isLimitOffsetSupported returns true");
     }
-    
+
     /**
-     * Add hints to the JDBC Feature Source. A subclass 
+     * Add hints to the JDBC Feature Source. A subclass
      * can override
-     * 
+     *
      * possible hints (but not limited to)
-     *  
+     *
      * {@link Hints#GEOMETRY_GENERALIZATION}
      * {@link Hints#GEOMETRY_SIMPLIFICATION}
-     *  
+     *
      * @param hints
      */
-    protected void addSupportedHints(Set<Hints.Key> hints) {       	
+    protected void addSupportedHints(Set<Hints.Key> hints) {
     }
-    
+
     /**
-     * Determines the default length that a varchar field should be when creating 
+     * Determines the default length that a varchar field should be when creating
      * datastore tables from feature types.
      * <p>
-     * Some dialects allow no length to be specified for varchar fields (PostGIS 
-     * for example) however others require a maximum length to be set.  
+     * Some dialects allow no length to be specified for varchar fields (PostGIS
+     * for example) however others require a maximum length to be set.
      * </p>
      * <p>
-     * Subclasses can override this method and either return -1 to specify that 
-     * no length is required, or otherwise return an appropriate default length 
+     * Subclasses can override this method and either return -1 to specify that
+     * no length is required, or otherwise return an appropriate default length
      * for varchars of that dialect.
      * </p>
      */
@@ -1126,6 +1126,10 @@ public abstract class SQLDialect {
      * @return true if read queries should remain autocommit, false otherwise
      */
     public boolean isAutoCommitQuery() {
+        return false;
+    }
+
+    public boolean isForceLongitudeLatitudeAxisOrder() {
         return false;
     }
 }

@@ -54,7 +54,10 @@ public class OracleNGDataStoreFactory extends JDBCDataStoreFactory {
     
     /** parameter for namespace of the datastore */
     public static final Param LOOSEBBOX = new Param("Loose bbox", Boolean.class, "Perform only primary filter on bbox", false, Boolean.TRUE);
-    
+
+    /** parameter for forcing acess order */
+    public static final Param FORCE_LON_LAT_ORDER = new Param("forceLonLatOrder", Boolean.class, "Force (longitude,latitude) axis order", false, false);
+
     @Override
     protected SQLDialect createSQLDialect(JDBCDataStore dataStore) {
         return new OracleDialect(dataStore);
@@ -111,10 +114,13 @@ public class OracleNGDataStoreFactory extends JDBCDataStoreFactory {
         OracleDialect dialect = (OracleDialect) dataStore.getSQLDialect();
         Boolean loose = (Boolean) LOOSEBBOX.lookUp(params);
         dialect.setLooseBBOXEnabled(loose == null || Boolean.TRUE.equals(loose));
-        
+
         // check the estimated extents
         Boolean estimated = (Boolean) ESTIMATED_EXTENTS.lookUp(params);
         dialect.setEstimatedExtentsEnabled(estimated == null || Boolean.TRUE.equals(estimated));
+
+        Boolean forcerLonLatOrder = (Boolean) FORCE_LON_LAT_ORDER.lookUp(params);
+        dialect.setForceLongitudeLatitudeAxisOrder(Boolean.TRUE.equals(forcerLonLatOrder));
         
         // setup proper fetch size
         dataStore.setFetchSize(200);
