@@ -85,6 +85,7 @@ import org.geotools.geometry.jts.LiteCoordinateSequence;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
 import org.geotools.geometry.jts.LiteShape2;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.MapContext;
@@ -179,7 +180,7 @@ import org.geotools.map.DirectLayer;
  * @source $URL$
  * @version $Id$
  */
-public final class StreamingRenderer implements GTRenderer {
+public class StreamingRenderer implements GTRenderer {
     private final static int defaultMaxFiltersToSendToDatastore = 5; // default
 
     /**
@@ -632,7 +633,7 @@ public final class StreamingRenderer implements GTRenderer {
                 worldToScreen);
     }
 
-    private double computeScale(ReferencedEnvelope envelope, Rectangle paintArea, 
+    protected double computeScale(ReferencedEnvelope envelope, Rectangle paintArea, 
             AffineTransform worldToScreen, Map hints) {
         if(getScaleComputationMethod().equals(SCALE_ACCURATE)) {
             try {
@@ -786,7 +787,7 @@ public final class StreamingRenderer implements GTRenderer {
             {
                 Layer layer = mapContent.layers().get(i);
     
-                if (!layer.isVisible()) {
+                if (!layer.isVisible() || !layer.isVisibleAtScale(scaleDenominator)) {
                     // Only render layer when layer is visible
                     continue;
                 }
@@ -794,7 +795,7 @@ public final class StreamingRenderer implements GTRenderer {
                 if (renderingStopRequested) {
                     return;
                 }
-                labelCache.startLayer(i+"");
+                boolean drawLabels = true;
                 
                 if (layer instanceof DirectLayer) {
                     RenderingRequest request = new RenderDirectLayerRequest(
@@ -807,18 +808,27 @@ public final class StreamingRenderer implements GTRenderer {
                     
                 } else {
                     MapLayer currLayer = new MapLayer(layer);
+                    if (layer instanceof FeatureLayer) {
+                        FeatureLayer featureLayer = (FeatureLayer) layer;
+                        drawLabels = featureLayer.getDrawLabels() && featureLayer.getDrawLabelsAtScale(scaleDenominator);
+                        if (drawLabels) {
+                            labelCache.startLayer(i + "");
+                        }
+                    }
                     try {
 
                         // extract the feature type stylers from the style object
                         // and process them
                         processStylers(graphics, currLayer, worldToScreenTransform,
-                                destinationCrs, mapExtent, screenSize, i + "");
+                                destinationCrs, mapExtent, screenSize, i + "", drawLabels);
                     } catch (Throwable t) {
                         fireErrorEvent(t);
                     }
                 }
     
-                labelCache.endLayer(i+"", graphics, screenSize);
+                if (drawLabels) {
+                    labelCache.endLayer(i+"", graphics, screenSize);
+                }
             }
         } finally {
             try {
@@ -964,7 +974,7 @@ public final class StreamingRenderer implements GTRenderer {
             Envelope mapArea, CoordinateReferenceSystem mapCRS,
             CoordinateReferenceSystem featCrs, Rectangle screenSize,
             GeometryDescriptor geometryAttribute,
-            AffineTransform worldToScreenTransform)
+            AffineTransform worldToScreenTransform, boolean drawLabels)
             throws IllegalFilterException, IOException, FactoryException {
         FeatureCollection<FeatureType, Feature> results = null;
         Query query = new Query(Query.ALL);
@@ -993,7 +1003,7 @@ public final class StreamingRenderer implements GTRenderer {
         if (styles == null) {
             attributes = null;
         } else {
-            attributes = findStyleAttributes(styles, schema );
+            attributes = findStyleAttributes(styles, schema, drawLabels);
         }
 
         ReferencedEnvelope envelope = new ReferencedEnvelope(mapArea, mapCRS);
@@ -1444,8 +1454,8 @@ public final class StreamingRenderer implements GTRenderer {
      *         <code>layer</code>
      */
     private List<PropertyName> findStyleAttributes(LiteFeatureTypeStyle[] styles,
-            FeatureType schema) {
-        final StyleAttributeExtractor sae = new StyleAttributeExtractor();
+            FeatureType schema, boolean drawLabels) {
+        final StyleAttributeExtractor sae = new StyleAttributeExtractor(!drawLabels);
 
         LiteFeatureTypeStyle lfts;
         Rule[] rules;
@@ -1741,7 +1751,7 @@ public final class StreamingRenderer implements GTRenderer {
     }
 
 
-    private boolean isFeatureTypeStyleActive(FeatureType ftype, FeatureTypeStyle fts) {
+    protected boolean isFeatureTypeStyleActive(FeatureType ftype, FeatureTypeStyle fts) {
         // TODO: find a complex feature equivalent for this check
         return fts.featureTypeNames().isEmpty() || ((ftype.getName().getLocalPart() != null)
                 && (ftype.getName().getLocalPart().equalsIgnoreCase(fts.getFeatureTypeName()) || 
@@ -1786,7 +1796,7 @@ public final class StreamingRenderer implements GTRenderer {
     public int getMaxBackBufferMemory(int width, int height) {
         int maxBuffers = 0;
         for (Layer layer : mapContent.layers()) {
-            if (!layer.isVisible()) {
+            if (!layer.isVisible() || !layer.isVisibleAtScale(scaleDenominator)) {
                 // Only render layer when layer is visible
                 continue;
             }
@@ -1919,7 +1929,7 @@ public final class StreamingRenderer implements GTRenderer {
     private void processStylers(final Graphics2D graphics,
             MapLayer currLayer, AffineTransform at,
             CoordinateReferenceSystem destinationCrs, Envelope mapArea,
-            Rectangle screenSize, String layerId) throws Exception {
+            Rectangle screenSize, String layerId, boolean drawLabels) throws Exception {
         /*
          * DJB: changed this a wee bit so that it now does the layer query AFTER
          * it has evaluated the rules for scale inclusion. This makes it so that
@@ -1975,7 +1985,7 @@ public final class StreamingRenderer implements GTRenderer {
                 inMemoryGeneralization = true;
                 Query query = getLayerQuery(currLayer, featureSource, schema,
                         uniform, mapArea, destinationCrs, sourceCrs, screenSize,
-                        geometryAttribute, at);
+                        geometryAttribute, at, drawLabels);
                 FeatureCollection rawFeatures;
                 if(transform != null) {
                     GridEnvelope2D ge = new GridEnvelope2D(screenSize);
@@ -2008,10 +2018,10 @@ public final class StreamingRenderer implements GTRenderer {
                 // finally, perform rendering
                 if(isOptimizedFTSRenderingEnabled() && lfts.size() > 1) {
                     drawOptimized(graphics, currLayer, at, destinationCrs, layerId, null, features,
-                            scaleRange, uniform);
+                            scaleRange, uniform, drawLabels);
                 } else {
                     drawPlain(graphics, currLayer, at, destinationCrs, layerId, null, features,
-                            scaleRange, uniform);
+                            scaleRange, uniform, drawLabels);
                 }
             }
         } else {
@@ -2030,10 +2040,10 @@ public final class StreamingRenderer implements GTRenderer {
             // finally, perform rendering
             if(isOptimizedFTSRenderingEnabled() && lfts.size() > 1) {
                 drawOptimized(graphics, currLayer, at, destinationCrs, layerId, collection, null,
-                        scaleRange, lfts);
+                        scaleRange, lfts, drawLabels);
             } else {
                 drawPlain(graphics, currLayer, at, destinationCrs, layerId, collection, null,
-                        scaleRange, lfts);
+                        scaleRange, lfts, drawLabels);
             }
         }
     }
@@ -2481,9 +2491,10 @@ public final class StreamingRenderer implements GTRenderer {
      * Performs all rendering on the user provided graphics object by scanning
      * the collection multiple times, one for each feature type style provided
      */
-    private void drawPlain(final Graphics2D graphics, MapLayer currLayer, AffineTransform at,
+    protected void drawPlain(final Graphics2D graphics, MapLayer currLayer, AffineTransform at,
             CoordinateReferenceSystem destinationCrs, String layerId, Collection collection,
-            FeatureCollection features, final NumberRange scaleRange, final List lfts) {
+            FeatureCollection features, final NumberRange scaleRange, final List lfts,
+            boolean drawLabels) {
         final LiteFeatureTypeStyle[] fts_array = (LiteFeatureTypeStyle[]) lfts
         .toArray(new LiteFeatureTypeStyle[lfts.size()]);
 
@@ -2499,7 +2510,7 @@ public final class StreamingRenderer implements GTRenderer {
                 return; // nothing to do
 
             try {
-                boolean clone = isCloningRequired(currLayer, fts_array);
+                boolean clone = isCloningRequired(currLayer, fts_array, drawLabels);
                 RenderableFeature rf = new RenderableFeature(currLayer, clone);
                 // loop exit condition tested inside try catch
                 // make sure we test hasNext() outside of the try/cath that follows, as that
@@ -2509,7 +2520,7 @@ public final class StreamingRenderer implements GTRenderer {
                 while (iterator.hasNext() && !renderingStopRequested) {
                     try {
                         rf.setFeature(iterator.next());
-                        process(rf, liteFeatureTypeStyle, scaleRange, at, destinationCrs, layerId);
+                        process(rf, liteFeatureTypeStyle, scaleRange, at, destinationCrs, layerId, drawLabels);
                     } catch (Throwable tr) {
                         fireErrorEvent(tr);
                     }
@@ -2530,9 +2541,10 @@ public final class StreamingRenderer implements GTRenderer {
      * of multiple feature type styles, using the in memory buffer for each feature type
      * style other than the first one (that uses the graphics provided by the user)s 
      */
-    private void drawOptimized(final Graphics2D graphics, MapLayer currLayer, AffineTransform at,
+    protected void drawOptimized(final Graphics2D graphics, MapLayer currLayer, AffineTransform at,
             CoordinateReferenceSystem destinationCrs, String layerId, Collection collection,
-            FeatureCollection features, final NumberRange scaleRange, final List lfts) {
+            FeatureCollection features, final NumberRange scaleRange, final List lfts,
+            boolean drawLabels) {
         Iterator iterator = null;
         if( collection != null ) iterator = collection.iterator();        
         if( features != null ) iterator = features.iterator();
@@ -2543,7 +2555,7 @@ public final class StreamingRenderer implements GTRenderer {
         .toArray(new LiteFeatureTypeStyle[lfts.size()]);
 
         try {
-            boolean clone = isCloningRequired(currLayer, fts_array);
+            boolean clone = isCloningRequired(currLayer, fts_array, drawLabels);
             RenderableFeature rf = new RenderableFeature(currLayer, clone);
             // loop exit condition tested inside try catch
             // make sure we test hasNext() outside of the try/cath that follows, as that
@@ -2556,7 +2568,7 @@ public final class StreamingRenderer implements GTRenderer {
                     // draw the feature on the main graphics and on the eventual extra image buffers
                     for (LiteFeatureTypeStyle liteFeatureTypeStyle : fts_array) {
                         rf.setScreenMap(liteFeatureTypeStyle.screenMap);
-                        process(rf, liteFeatureTypeStyle, scaleRange, at, destinationCrs, layerId);
+                        process(rf, liteFeatureTypeStyle, scaleRange, at, destinationCrs, layerId, drawLabels);
 
                     }
                 } catch (Throwable tr) {
@@ -2581,7 +2593,7 @@ public final class StreamingRenderer implements GTRenderer {
     /**
      * Tells if geometry cloning is required or not
      */
-    private boolean isCloningRequired(MapLayer layer, LiteFeatureTypeStyle[] lfts) {
+    private boolean isCloningRequired(MapLayer layer, LiteFeatureTypeStyle[] lfts, boolean drawLabels) {
         // check if the features are detached, we can thus modify the geometries in place
         final Set<Key> hints = layer.getFeatureSource().getSupportedHints();
         if(!hints.contains(Hints.FEATURE_DETACHED))
@@ -2592,7 +2604,7 @@ public final class StreamingRenderer implements GTRenderer {
         // Just one geometry transformation over an attribute -> we can modify geometries in place
         // Two tx over the same attribute, or straight usage and a tx -> we have to preserve the 
         // original geometry as well, thus we need cloning
-        StyleAttributeExtractor extractor = new StyleAttributeExtractor();
+        StyleAttributeExtractor extractor = new StyleAttributeExtractor(!drawLabels);
         FeatureType featureType = layer.getFeatureSource().getSchema();
         Set<String> plainGeometries = new java.util.HashSet<String>();
         Set<String> txGeometries = new java.util.HashSet<String>();
@@ -2637,7 +2649,7 @@ public final class StreamingRenderer implements GTRenderer {
      */
     private void process(RenderableFeature rf, LiteFeatureTypeStyle fts,
             NumberRange scaleRange, AffineTransform at,
-            CoordinateReferenceSystem destinationCrs, String layerId)
+            CoordinateReferenceSystem destinationCrs, String layerId, boolean drawLabels)
             throws Exception {
         boolean doElse = true;
         Rule[] elseRuleList = fts.elseRules;
@@ -2649,11 +2661,14 @@ public final class StreamingRenderer implements GTRenderer {
         final int length = ruleList.length;
         for (int t = 0; t < length; t++) {
             r = ruleList[t];
+            if (!isRuleActive(rf.content, r)) {
+                continue;
+            }
             filter = r.getFilter();
 
             if (filter == null || filter.evaluate(rf.content)) {
                 doElse = false;
-                processSymbolizers(graphics, rf, r.symbolizers(), scaleRange, at, destinationCrs, layerId);
+                processSymbolizers(graphics, rf, r.symbolizers(), scaleRange, at, destinationCrs, layerId, drawLabels);
             }
         }
 
@@ -2661,12 +2676,18 @@ public final class StreamingRenderer implements GTRenderer {
             final int elseLength = elseRuleList.length;
             for (int tt = 0; tt < elseLength; tt++) {
                 r = elseRuleList[tt];
-
+                if (!isRuleActive(rf.content, r)) {
+                    continue;
+                }
                 processSymbolizers(graphics, rf, r.symbolizers(), scaleRange,
-                        at, destinationCrs, layerId);
+                        at, destinationCrs, layerId, drawLabels);
 
             }
         }
+    }
+
+    protected boolean isRuleActive(Object drawMe, Rule rule) {
+        return true;
     }
 
     /**
@@ -2693,7 +2714,7 @@ public final class StreamingRenderer implements GTRenderer {
     private void processSymbolizers(final Graphics2D graphics,
             final RenderableFeature drawMe, final List<Symbolizer> symbolizers,
             NumberRange scaleRange, AffineTransform at,
-            CoordinateReferenceSystem destinationCrs, String layerId)
+            CoordinateReferenceSystem destinationCrs, String layerId, boolean drawLabels)
             throws Exception {
         
         for (Symbolizer symbolizer : symbolizers) {
@@ -2747,8 +2768,10 @@ public final class StreamingRenderer implements GTRenderer {
                 }
                 
                 if (symbolizer instanceof TextSymbolizer && drawMe.content instanceof Feature) {
-                    labelCache.put(layerId, (TextSymbolizer) symbolizer, (Feature) drawMe.content,
-                            shape, scaleRange);
+                    if (drawLabels) {
+                        labelCache.put(layerId, (TextSymbolizer) symbolizer, (Feature) drawMe.content,
+                                shape, scaleRange);
+                    }
                 } else {
                     Style2D style = styleFactory.createStyle(drawMe.content,
                             symbolizer, scaleRange);
@@ -2800,25 +2823,31 @@ public final class StreamingRenderer implements GTRenderer {
      * @return The geometry requested in the symbolizer, or the default geometry
      *         if none is specified
      */
-    private com.vividsolutions.jts.geom.Geometry findGeometry(Object drawMe,
+    private static com.vividsolutions.jts.geom.Geometry findGeometry(Object drawMe,
             Symbolizer s) {
         Expression geomExpr = s.getGeometry();
 
         // get the geometry
         Geometry geom;
         if(geomExpr == null) {
-            if(drawMe instanceof SimpleFeature) {
-                geom = (Geometry) ((SimpleFeature) drawMe).getDefaultGeometry();
-            } else if (drawMe instanceof Feature) {
-                geom = (Geometry) ((Feature) drawMe).getDefaultGeometryProperty().getValue();
-            } else {
-                geom = (Geometry) defaultGeometryPropertyName.evaluate(drawMe, Geometry.class);
-            }
+            geom = findGeometry(drawMe);
         } else {
-            geom = (Geometry) geomExpr.evaluate(drawMe, Geometry.class);
+            geom = geomExpr.evaluate(drawMe, Geometry.class);
         }
 
-        return geom;    
+        return geom;
+    }
+
+    protected static Geometry findGeometry(Object drawMe) {
+        Geometry geom;
+        if(drawMe instanceof SimpleFeature) {
+            geom = (Geometry) ((SimpleFeature) drawMe).getDefaultGeometry();
+        } else if (drawMe instanceof Feature) {
+            geom = (Geometry) ((Feature) drawMe).getDefaultGeometryProperty().getValue();
+        } else {
+            geom = defaultGeometryPropertyName.evaluate(drawMe, Geometry.class);
+        }
+        return geom;
     }
 
     /**
