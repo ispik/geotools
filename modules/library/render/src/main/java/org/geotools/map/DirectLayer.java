@@ -38,4 +38,13 @@ public abstract class DirectLayer extends Layer {
      */
     public abstract void draw(Graphics2D graphics, MapContent map, MapViewport viewport);
     
+    public boolean isDrawOnTop() {
+        return drawOnTop;
+    }
+
+    public void setDrawOnTop(boolean drawOnTop) {
+        this.drawOnTop = drawOnTop;
+    }
+
+    private boolean drawOnTop;
 }

@@ -76,6 +76,8 @@ import org.geotools.geometry.jts.LiteCoordinateSequence;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
 import org.geotools.geometry.jts.LiteShape2;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.map.DirectLayer;
+import org.geotools.map.Layer;
 import org.geotools.map.MapContext;
 import org.geotools.map.MapLayer;
 import org.geotools.parameter.Parameter;
@@ -753,6 +755,7 @@ public class StreamingRenderer implements GTRenderer {
             }
             final int layersNumber = layers.length;
             MapLayer currLayer;
+            List<DirectLayer> onTopDirectLayers = null;
             for (int i = 0; i < layersNumber; i++) // DJB: for each layer (ie. one
             {
                 currLayer = layers[i];
@@ -770,17 +773,45 @@ public class StreamingRenderer implements GTRenderer {
                     labelCache.startLayer(i+"", currLayer.getLabelOpacity());
                 }
                 try {
-    
-                    // extract the feature type stylers from the style object
-                    // and process them
-                    processStylersWithTransparency(graphics, currLayer, worldToScreenTransform,
-                            destinationCrs, mapExtent, screenSize, i+"", drawLabels);
+                    Layer layer = currLayer.toLayer();
+                    if (layer instanceof DirectLayer) {
+                        DirectLayer directLayer = (DirectLayer) layer;
+                        if (directLayer.isDrawOnTop()) {
+                            if (onTopDirectLayers == null) {
+                                onTopDirectLayers = new LinkedList<DirectLayer>();
+                                onTopDirectLayers.add(directLayer);
+                            }
+                        } else {
+                            requests.put(new RenderDirectLayerRequest(graphics, directLayer));
+                        }
+                    } else {
+                        // extract the feature type stylers from the style object
+                        // and process them
+                        processStylersWithTransparency(graphics, currLayer, worldToScreenTransform,
+                                destinationCrs, mapExtent, screenSize, i + "", drawLabels);
+                    }
                 } catch (Throwable t) {
                     fireErrorEvent(t);
                 }
     
                 if (drawLabels) {
                     labelCache.endLayer(i+"", graphics, screenSize);
+                }
+            }
+
+            try {
+                requests.put(new FlushLabelCacheRequest(graphics, paintArea));
+            } catch (InterruptedException e) {
+                fireErrorEvent(e);
+            }
+
+            if (onTopDirectLayers != null) {
+                for (DirectLayer layer : onTopDirectLayers) {
+                    try {
+                        requests.put(new RenderDirectLayerRequest(graphics, layer));
+                    } catch (InterruptedException e) {
+                        fireErrorEvent(e);
+                    }
                 }
             }
         } finally {
@@ -797,8 +828,6 @@ public class StreamingRenderer implements GTRenderer {
             }
         }
         
-        labelCache.end(graphics, paintArea);
-    
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine(new StringBuffer("Style cache hit ratio: ").append(
                     styleFactory.getHitRatio()).append(" , hits ").append(
@@ -3011,6 +3040,36 @@ public class StreamingRenderer implements GTRenderer {
         private final Graphics2D graphics;
         private final DelayedBackbufferGraphic tmpGraphics;
         private float opacity;
+    }
+
+    private class FlushLabelCacheRequest extends RenderingRequest {
+        public FlushLabelCacheRequest(Graphics2D graphics, Rectangle paintArea) {
+            this.graphics = graphics;
+            this.paintArea = paintArea;
+        }
+
+        @Override
+        void execute() {
+            labelCache.end(graphics, paintArea);
+        }
+
+        private final Graphics2D graphics;
+        private final Rectangle paintArea;
+    }
+
+    private class RenderDirectLayerRequest extends RenderingRequest {
+        public RenderDirectLayerRequest(Graphics2D graphics, DirectLayer layer) {
+            this.graphics = graphics;
+            this.layer = layer;
+        }
+
+        @Override
+        void execute() {
+            layer.draw(graphics, context, context.getViewport());
+        }
+
+        private final Graphics2D graphics;
+        private final DirectLayer layer;
     }
 
 
