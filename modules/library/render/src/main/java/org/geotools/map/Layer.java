@@ -61,6 +61,7 @@ public abstract class Layer {
 
     protected Double minScaleDenominator;
     protected Double maxScaleDenominator;
+    protected Float layerOpacity;
 
     /**
      * Map of application supplied information.
@@ -341,6 +342,14 @@ public abstract class Layer {
     
     public void setMaxScaleDenominator(Double maxScaleDenominator) {
         this.maxScaleDenominator = maxScaleDenominator;
+    }
+
+    public Float getLayerOpacity() {
+        return layerOpacity;
+    }
+
+    public void setLayerOpacity(Float layerOpacity) {
+        this.layerOpacity = layerOpacity;
     }
 
     /**

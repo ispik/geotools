@@ -85,6 +85,8 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
     
     int[] graphicMargin = null;
 
+    float opacity = 1.0f;
+
     public double getGoodnessOfFit() {
         return goodnessOfFit;
     }
@@ -321,7 +323,11 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(LabelCacheItem other) {
-        return Double.compare(this.getPriority(), other.getPriority());
+        int c = Double.compare(getPriority(), other.getPriority());
+        if (c == 0) {
+            return Float.compare(getOpacity(), other.getOpacity());
+        }
+        return c;
     }
 
     /**
@@ -381,5 +387,12 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
         return polygonAlign;
     }
     
+    public float getOpacity() {
+        return opacity;
+    }
+
+    public void setOpacity(float opacity) {
+        this.opacity = opacity;
+    }
 }
 

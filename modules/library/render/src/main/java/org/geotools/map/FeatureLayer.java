@@ -11,7 +11,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.event.MapLayerEvent;
-import org.geotools.map.event.MapLayerListener;
 import org.geotools.referencing.CRS;
 import org.geotools.styling.Style;
 import org.opengis.feature.Feature;
@@ -49,6 +48,7 @@ public class FeatureLayer extends Layer {
     protected boolean drawLabels = true;
     protected Double labelMinScaleDenominator;
     protected Double labelMaxScaleDenominator;
+    protected Float labelOpacity;
 
     /**
      * Creates a new instance of FeatureLayer
@@ -215,6 +215,14 @@ public class FeatureLayer extends Layer {
     
     public void setLabelMaxScaleDenominator(Double labelMaxScaleDenominator) {
         this.labelMaxScaleDenominator = labelMaxScaleDenominator;
+    }
+
+    public Float getLabelOpacity() {
+        return labelOpacity;
+    }
+
+    public void setLabelOpacity(Float labelOpacity) {
+        this.labelOpacity = labelOpacity;
     }
 
     @Override

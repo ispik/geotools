@@ -29,11 +29,8 @@ import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.SchemaException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.map.event.MapLayerListener;
 import org.geotools.styling.Style;
 import org.opengis.coverage.grid.GridCoverage;
-import org.opengis.feature.Feature;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.TransformException;
 
@@ -427,6 +424,32 @@ public class MapLayer {
         }
     }
     
+    public Float getLayerOpacity() {
+        return internal.getLayerOpacity();
+    }
+
+    public void setLayerOpacity(Float opacity) {
+        internal.setLayerOpacity(opacity);
+    }
+
+    public Float getLabelOpacity() {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getLabelOpacity();
+        } else {
+            return null;
+        }
+    }
+
+    public void setLabelOpacity(Float opacity) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelOpacity(opacity);
+        } else {
+            throw new IllegalStateException("LabelOpacity not supported by " + internal);
+        }
+    }
+
     /**
      * Determine whether this layer is currently selected.
      * 
