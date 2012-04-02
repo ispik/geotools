@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -784,6 +785,7 @@ public class StreamingRenderer implements GTRenderer {
                 ((LabelCacheImpl) labelCache).setLabelRenderingMode(LabelRenderingMode.valueOf(getTextRenderingMethod()));
             }
             final int layersNumber = mapContent.layers().size();
+            List<DirectLayer> onTopDirectLayers = null;
             for (int i = 0; i < layersNumber; i++) // DJB: for each layer (ie. one
             {
                 Layer layer = mapContent.layers().get(i);
@@ -799,14 +801,21 @@ public class StreamingRenderer implements GTRenderer {
                 boolean drawLabels = true;
                 
                 if (layer instanceof DirectLayer) {
-                    RenderingRequest request = new RenderDirectLayerRequest(
-                            graphics, (DirectLayer) layer);
-                    try {
-                        requests.put(request);
-                    } catch (InterruptedException e) {
-                        fireErrorEvent(e);
+                    DirectLayer directLayer = (DirectLayer) layer;
+                    if (directLayer.isDrawOnTop()) {
+                        if (onTopDirectLayers == null) {
+                            onTopDirectLayers = new LinkedList<DirectLayer>();
+                            onTopDirectLayers.add(directLayer);
+                        }
+                    } else {
+                        RenderingRequest request = new RenderDirectLayerRequest(
+                                graphics, directLayer);
+                        try {
+                            requests.put(request);
+                        } catch (InterruptedException e) {
+                            fireErrorEvent(e);
+                        }
                     }
-                    
                 } else {
                     MapLayer currLayer = new MapLayer(layer);
                     if (layer instanceof FeatureLayer) {
@@ -831,6 +840,22 @@ public class StreamingRenderer implements GTRenderer {
                     labelCache.endLayer(i+"", graphics, screenSize);
                 }
             }
+
+            try {
+                requests.put(new FlushLabelCacheRequest(graphics, paintArea));
+            } catch (InterruptedException e) {
+                fireErrorEvent(e);
+            }
+
+            if (onTopDirectLayers != null) {
+                for (DirectLayer layer : onTopDirectLayers) {
+                    try {
+                        requests.put(new RenderDirectLayerRequest(graphics, layer));
+                    } catch (InterruptedException e) {
+                        fireErrorEvent(e);
+                    }
+                }
+            }
         } finally {
             try {
                 requests.put(new EndRequest());
@@ -845,8 +870,6 @@ public class StreamingRenderer implements GTRenderer {
             }
         }
         
-        labelCache.end(graphics, paintArea);
-    
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine(new StringBuffer("Style cache hit ratio: ").append(
                     styleFactory.getHitRatio()).append(" , hits ").append(
@@ -3492,6 +3515,20 @@ public class StreamingRenderer implements GTRenderer {
         private float opacity;
     }
 
+    private class FlushLabelCacheRequest extends RenderingRequest {
+        public FlushLabelCacheRequest(Graphics2D graphics, Rectangle paintArea) {
+            this.graphics = graphics;
+            this.paintArea = paintArea;
+        }
+
+        @Override
+        void execute() {
+            labelCache.end(graphics, paintArea);
+        }
+
+        private final Graphics2D graphics;
+        private final Rectangle paintArea;
+    }
 
     /**
      * A request to render a raster
