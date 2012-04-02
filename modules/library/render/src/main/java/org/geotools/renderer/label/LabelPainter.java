@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.media.jai.Interpolation;
 import javax.swing.Icon;
 
 import org.geotools.geometry.jts.LiteShape2;
@@ -609,7 +608,7 @@ public class LabelPainter {
         java.awt.Shape outline = gv.getOutline();
         if (labelItem.getTextStyle().getHaloFill() != null) {
             configureHalo();
-            graphics.draw(outline);
+            drawHalo(outline);
         }
         configureLabelStyle();
         
@@ -633,10 +632,25 @@ public class LabelPainter {
     private void configureHalo() {
         graphics.setPaint(labelItem.getTextStyle().getHaloFill());
         graphics.setComposite(labelItem.getTextStyle().getHaloComposite());
-        float haloRadius = labelItem.getTextStyle().getHaloFill() != null ? labelItem.getTextStyle().getHaloRadius() : 0;
-        graphics.setStroke(new BasicStroke(2 * haloRadius, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        float haloRadius = labelItem.getTextStyle().getHaloRadius();
+        float radius = labelItem.isShadowHalo() ? haloRadius : 2 * haloRadius;
+        graphics.setStroke(new BasicStroke(radius, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     }
 
+    private void drawHalo(Shape outline) {
+        if (labelItem.isShadowHalo()) {
+            float offset = labelItem.getTextStyle().getHaloRadius() * 0.5f;
+            AffineTransform oldTransform = graphics.getTransform();
+            AffineTransform tx = new AffineTransform(oldTransform);
+            tx.translate(offset, offset);
+            graphics.setTransform(tx);
+            graphics.draw(outline);
+            graphics.setTransform(oldTransform);
+        } else {
+            graphics.draw(outline);
+        }
+    }
+    
     /**
      * Configures the graphic to do the text drawing
      */
@@ -723,7 +737,7 @@ public class LabelPainter {
                 configureHalo();
                 for (int i = 0; i < numGlyphs; i++) {
                     graphics.setTransform(transforms[i]);
-                    graphics.draw(outlines[i]);
+                    drawHalo(outlines[i]);
                 }
             }
             configureLabelStyle();
