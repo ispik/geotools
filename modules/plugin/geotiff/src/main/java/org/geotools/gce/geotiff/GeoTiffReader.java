@@ -41,6 +41,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
+import java.awt.image.MultiPixelPackedSampleModel;
+import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
@@ -239,6 +241,7 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
 			if (closeMe&&inStream!=null)// 
 				try{
 					inStream.close();
+                    inStream = null;
 				}catch (Throwable t) {
 				}
 		}
@@ -563,7 +566,8 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
                 final double scaleY = originalGridRange.getSpan(1) / (1.0 * ssHeight);
                 final AffineTransform tempRaster2Model = new AffineTransform((AffineTransform) raster2Model);
                 tempRaster2Model.concatenate(new AffineTransform(scaleX, 0, 0, scaleY, 0, 0));
-                return createCoverage(coverageRaster, ProjectiveTransform.create((AffineTransform) tempRaster2Model));
+                PlanarImage coverageRasterWithReplacedColors = makeColorsTransparent(coverageRaster, hints);
+                return createCoverage(coverageRasterWithReplacedColors, ProjectiveTransform.create(tempRaster2Model));
 
 
 	}
@@ -761,6 +765,23 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
         return crs;
     }
         
+    private static PlanarImage makeColorsTransparent(PlanarImage image, Hints hints) {
+        TransparencySettings transparencySettings = (TransparencySettings)hints.get(GeoTiffFormat.TRANSPARENCY_SETTINGS);
+        if (transparencySettings != null) {
+            return makeColorsTransparent(transparencySettings.getTransparentColors(), image);
+        } else {
+            return image;
+        }
+    }
+    private static PlanarImage makeColorsTransparent(Set<Color> transparentColors, PlanarImage image)
+            throws IllegalStateException {
+        ImageWorkerExt w = new ImageWorkerExt(image);
+        if (image.getSampleModel() instanceof MultiPixelPackedSampleModel) {
+            w.forceComponentColorModel();
+        }
+        RenderedImage img = w.makeColorsTransparent(transparentColors).getRenderedImage();
+        return PlanarImage.wrapRenderedImage(img);
+    }
         
     /**
      * @throws IOException

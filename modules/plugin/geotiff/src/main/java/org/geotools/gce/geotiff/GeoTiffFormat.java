@@ -83,6 +83,8 @@ public class GeoTiffFormat extends AbstractGridFormat implements Format {
     private final static Logger LOGGER = org.geotools.util.logging.Logging
             .getLogger(GeoTiffFormat.class);
     
+    public static final Hints.Key TRANSPARENCY_SETTINGS = new Hints.Key(TransparencySettings.class);
+    
     /**
      * This {@link GeneralParameterValue} can be provided to the
      * {@link GeoTiffWriter}s in order
