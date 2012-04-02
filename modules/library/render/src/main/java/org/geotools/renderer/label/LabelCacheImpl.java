@@ -351,6 +351,7 @@ public final class LabelCacheImpl implements LabelCache {
         item.setPolygonAlign((PolygonAlignOptions) getEnumOption(symbolizer, POLYGONALIGN_KEY, DEFAULT_POLYGONALIGN));
         item.setGraphicsResize(getGraphicResize(symbolizer));
         item.setGraphicMargin(getGraphicMargin(symbolizer));
+        item.setShadowHalo(getBooleanOption(symbolizer, SHADOW_HALO_KEY, DEFAULT_SHADOW_HALO));
         item.setOpacity(currentOpacity);
         return item;
     }

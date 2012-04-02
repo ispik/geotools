@@ -85,6 +85,8 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
     
     int[] graphicMargin = null;
 
+    boolean shadowHalo = false;
+
     float opacity = 1.0f;
 
     public double getGoodnessOfFit() {
@@ -385,6 +387,14 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
 
     PolygonAlignOptions getPolygonAlign() {
         return polygonAlign;
+    }
+
+    public boolean isShadowHalo() {
+        return shadowHalo;
+    }
+
+    public void setShadowHalo(boolean shadowHalo) {
+        this.shadowHalo = shadowHalo;
     }
     
     public float getOpacity() {

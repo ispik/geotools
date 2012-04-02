@@ -245,6 +245,10 @@ public interface TextSymbolizer extends org.opengis.style.TextSymbolizer,Symboli
      */
     public static final double DEFAULT_GOODNESS_OF_FIT = 0.5;
     
+    public static String SHADOW_HALO_KEY = "shadowHalo";
+    
+    public static final boolean DEFAULT_SHADOW_HALO = false;
+    
     /**
      * Option overriding manual rotation to align label rotation automatically for polygons.
      */
