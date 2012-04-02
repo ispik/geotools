@@ -582,7 +582,7 @@ public abstract class JDBC1DataStore implements DataStore {
 		
 		//JD: This is bad, we should not assume we have the right to change the query object
 		Filter originalFilter = (Filter) query.getFilter();
-		((DefaultQuery) query).setFilter(preFilter);
+		query.setFilter(preFilter);
 		
 		String[] requestedNames = propertyNames(query);
 		String[] propertyNames;
@@ -642,7 +642,7 @@ public abstract class JDBC1DataStore implements DataStore {
 		LOGGER.fine(sqlQuery );
 		
 		//JD: This is bad, we should not assume we have the right to change the query object
-		((DefaultQuery) query).setFilter(originalFilter);
+		query.setFilter(originalFilter);
 		
 		QueryData queryData = executeQuery(typeInfo, typeName, sqlQuery, trans,
 				false, query.getHints());
