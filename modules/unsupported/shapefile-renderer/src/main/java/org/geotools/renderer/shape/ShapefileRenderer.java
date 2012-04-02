@@ -1437,7 +1437,7 @@ public class ShapefileRenderer implements GTRenderer {
             	renderWithStreamingRenderer(currLayer, graphics, paintArea, envelope, transform);
                 continue;
             }
-            labelCache.startLayer(""+i);
+            labelCache.startLayer(""+i, null);
 
             ReferencedEnvelope bbox = envelope;
 
