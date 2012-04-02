@@ -17,6 +17,8 @@
 package org.geotools.factory;
 
 import java.awt.RenderingHints;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,16 +80,29 @@ public final class GeoTools {
     static {
         Properties props = new Properties();
         try {
-            props.load(GeoTools.class.getResourceAsStream("GeoTools.properties"));
-
+            loadProperites(props, "GeoTools.properties");
             //load git info if it is avaialble
-            if (GeoTools.class.getResource("/git.properties") != null) {
-                props.load(GeoTools.class.getResourceAsStream("/git.properties"));
-            }
+            loadProperites(props, "/git.properties");
         }
         catch(Exception e) {}
-        
+
         PROPS = props;
+    }
+
+    private static void loadProperites(Properties props, String resource) throws IOException {
+        InputStream stream = GeoTools.class.getResourceAsStream(resource);
+        if (stream != null) {
+            try {
+                props.load(stream);
+            }
+            finally {
+                try {
+                    stream.close();
+                }
+                catch (IOException ignore) {
+                }
+            }
+        }
     }
     
     /**
