@@ -103,7 +103,8 @@ public class TemporalConverterFactory implements ConverterFactory {
             if (Timestamp.class.isAssignableFrom(target) || Time.class.isAssignableFrom(target)
                     || java.sql.Date.class.isAssignableFrom(target)) {
 
-                if ( isSafeOnly && Time.class.isAssignableFrom( target ) ) {
+                if ( isSafeOnly && (Time.class.isAssignableFrom( target ) 
+                        || java.sql.Date.class.isAssignableFrom( target ))) {
                     //not safe
                     return null;
                 }
