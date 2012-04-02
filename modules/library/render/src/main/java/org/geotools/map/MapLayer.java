@@ -372,6 +372,61 @@ public class MapLayer {
         internal.setVisible(visible);
     }
 
+    public boolean isVisibleAtScale(double scaleDenominator) {
+        return internal.isVisibleAtScale(scaleDenominator);
+    }
+    
+    public void setMinScaleDenominator(Double minScaleDenominator) {
+        internal.setMinScaleDenominator(minScaleDenominator);
+    }
+    
+    public void setMaxScaleDenominator(Double maxScaleDenominator) {
+        internal.setMaxScaleDenominator(maxScaleDenominator);
+    }
+    
+    public boolean getDrawLabels() {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getDrawLabels();
+        }
+        return true;
+    }
+    
+    public boolean getDrawLabelsAtScale(double scaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getDrawLabelsAtScale(scaleDenominator);
+        }
+        return true;
+    }
+    
+    public void setDrawLabels(boolean drawLabels) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setDrawLabels(drawLabels);
+        } else {
+            throw new IllegalStateException("DrawLabels not supported by " + internal);
+        }
+    }
+    
+    public void setLabelMinScaleDenominator(Double labelMinScaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelMinScaleDenominator(labelMinScaleDenominator);
+        } else {
+            throw new IllegalStateException("LabelMinScaleDenominator not supported by " + internal);
+        }
+    }
+    
+    public void setLabelMaxScaleDenominator(Double labelMaxScaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelMaxScaleDenominator(labelMaxScaleDenominator);
+        } else {
+            throw new IllegalStateException("LabelMaxScaleDenominator not supported by " + internal);
+        }
+    }
+    
     /**
      * Determine whether this layer is currently selected.
      * 

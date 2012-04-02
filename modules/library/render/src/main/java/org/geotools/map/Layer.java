@@ -59,6 +59,9 @@ public abstract class Layer {
      */
     private boolean preDispose;
 
+    protected Double minScaleDenominator;
+    protected Double maxScaleDenominator;
+
     /**
      * Map of application supplied information.
      */
@@ -320,6 +323,24 @@ public abstract class Layer {
                 fireMapLayerListenerLayerDeselected();
             }
         }
+    }
+    
+    public boolean isVisibleAtScale(double scaleDenominator) {
+        if (minScaleDenominator != null && scaleDenominator < minScaleDenominator) {
+            return false;
+        }
+        if (maxScaleDenominator != null && scaleDenominator > maxScaleDenominator) {
+            return false;
+        }
+        return true;
+    }
+    
+    public void setMinScaleDenominator(Double minScaleDenominator) {
+        this.minScaleDenominator = minScaleDenominator;
+    }
+    
+    public void setMaxScaleDenominator(Double maxScaleDenominator) {
+        this.maxScaleDenominator = maxScaleDenominator;
     }
 
     /**
