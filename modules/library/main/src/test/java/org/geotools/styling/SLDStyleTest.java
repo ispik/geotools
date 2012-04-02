@@ -716,4 +716,31 @@ public class SLDStyleTest extends TestCase {
         assertEquals("the_geom", ps.getGeometryPropertyName());
 
     }
+
+    public void testTextDecoration() throws Exception {
+        StyleFactory factory = CommonFactoryFinder.getStyleFactory(null);
+        java.net.URL surl = TestData.getResource(this, "textDecoration.sld");
+        SLDParser stylereader = new SLDParser(factory, surl);
+
+        Style[] styles = stylereader.readXML();
+        assertEquals(1, styles.length);
+        assertEquals(1, styles[0].featureTypeStyles().size());
+        assertEquals(2, styles[0].featureTypeStyles().get(0).rules().size());
+
+        Rule r = styles[0].featureTypeStyles().get(0).rules().get(0);
+        assertEquals(1, r.getSymbolizers().length);
+
+        TextSymbolizer ts = (TextSymbolizer) r.getSymbolizers()[0];
+        Expression textDecoration = ts.getFont().getTextDecoration();
+        assertNull(textDecoration);
+
+        r = styles[0].featureTypeStyles().get(0).rules().get(1);
+        assertEquals(1, r.getSymbolizers().length);
+
+        ts = (TextSymbolizer) r.getSymbolizers()[0];
+        textDecoration = ts.getFont().getTextDecoration();
+        assertNotNull(textDecoration);
+        String decoration = textDecoration.evaluate(null, String.class);
+        assertEquals("line-through", decoration);
+    }
 }
