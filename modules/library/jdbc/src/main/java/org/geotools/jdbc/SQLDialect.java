@@ -562,7 +562,7 @@ public abstract class SQLDialect {
      */
     public CoordinateReferenceSystem createCRS(int srid, Connection cx) throws SQLException {
         try {
-            return CRS.decode("EPSG:" + srid);
+            return CRS.decode("EPSG:" + srid, isForceLongitudeLatitudeAxisOrder());
         } catch(Exception e) {
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Could not decode " + srid + " using the built-in EPSG database");
@@ -1047,4 +1047,7 @@ public abstract class SQLDialect {
         return false;
     }
 
+    public boolean isForceLongitudeLatitudeAxisOrder() {
+        return false;
+    }
 }

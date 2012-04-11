@@ -120,6 +120,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
                 assertTrue(count == fs.getCount(q));
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
     }
@@ -170,6 +171,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
                     assertTrue(envOrig.intersects((Envelope) env));
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
     }
@@ -256,6 +258,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
 
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
     }
@@ -285,6 +288,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             }
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
     }
@@ -376,6 +380,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
 
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
     }
@@ -386,6 +391,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             SimpleFeatureSource fs = ds.getFeatureSource("GenStreams");
             assertTrue(ds == fs.getDataStore());
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -435,6 +441,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             ds.dispose();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -537,6 +544,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             ds.dispose();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -553,6 +561,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             ds.dispose();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -596,6 +605,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             ds.dispose();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -616,6 +626,7 @@ public abstract class AbstractPreGeneralizedFeatureSourceTest extends TestCase {
             ds.dispose();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
