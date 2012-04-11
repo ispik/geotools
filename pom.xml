@@ -142,6 +142,32 @@
         </site>
       </distributionManagement>
     </profile>
+    <profile>
+      <id>jrebel-support</id>
+      <activation>
+        <property>
+          <name>env.JREBEL_HOME</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.zeroturnaround</groupId>
+            <artifactId>jrebel-maven-plugin</artifactId>
+            <version>1.1.0</version>
+            <executions>
+              <execution>
+                <id>generate-rebel-xml</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>generate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 
@@ -548,7 +574,7 @@
         <artifactId>jai_imageio</artifactId>
         <version>1.1</version>
       </dependency>
-      
+
       <!-- ImageIO-Ext -->
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
@@ -630,7 +656,7 @@
         <artifactId>imageio-ext-utilities</artifactId>
         <version>${imageio.ext.version}</version>
       </dependency>
-      
+
       <!-- JAITools -->
       <dependency>
         <groupId>com.googlecode.jaitools</groupId>
@@ -642,7 +668,7 @@
         <artifactId>jt-vectorbinarize</artifactId>
         <version>${jt.version}</version>
       </dependency>
-    
+
       <!-- Mathematic, geometries, SVG... -->
       <dependency>
         <groupId>java3d</groupId>
@@ -736,7 +762,7 @@
         <artifactId>eastwood</artifactId>
         <version>1.1.1-SNAPSHOT</version>
       </dependency>
-    
+
       <!-- XML -->
       <dependency>
         <groupId>jdom</groupId>
@@ -1016,11 +1042,11 @@
           <target>1.5</target>  <!-- The -target argument for the Java compiler. -->
           <debug>true</debug>   <!-- Whether to include debugging information.   -->
           <encoding>UTF-8</encoding> <!-- The -encoding argument for the Java compiler. -->
-          <!-- 
+          <!--
                On java6 the build oom's otherwise due to the compiler accumulating
-               too many classes in the permanent generation, see GEOT-2462  
+               too many classes in the permanent generation, see GEOT-2462
           -->
-          <fork>true</fork> 
+          <fork>true</fork>
           <maxmem>${javac.maxHeapSize}</maxmem>
         </configuration>
       </plugin>
@@ -1109,7 +1135,7 @@
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
+              <!--addClasspath>true</addClasspath-->
             </manifest>
             <manifestEntries>
               <Project-Version>${project.version}</Project-Version>
@@ -1165,7 +1191,7 @@
             </entries>
          </configuration>
       </plugin>
-      
+
       <!-- ======================================================= -->
       <!--     Git revision info.                                  -->
       <!-- ======================================================= -->
@@ -1274,16 +1300,12 @@
 
   <distributionManagement>
     <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>osgeo</id>
-      <name>Open Source Geospatial Foundation - Maven 2 repo</name>
-      <url>dav:http://download.osgeo.org/webdav/geotools/</url>
+      <id>ispik-thirdparty</id>
+      <url>http://kreta/maven/content/repositories/thirdparty/</url>
     </repository>
     <snapshotRepository>
-        <id>opengeo</id>
-        <uniqueVersion>false</uniqueVersion>
-        <name>OpenGeo Maven Repository</name>
-        <url>dav:http://repo.opengeo.org</url>
+      <id>ispik-snapshots</id>
+      <url>http://kreta/maven/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -1327,7 +1349,7 @@
       <releases>
         <enabled>true</enabled>
       </releases>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
       <snapshots>
         <enabled>true</enabled>
@@ -1335,7 +1357,7 @@
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
      <id>sonatype-snapshots</id>
      <name>sonatype-snapshots</name>
