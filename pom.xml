@@ -40,7 +40,7 @@
   <!--                                                             -->
   <!--     interactive.tests  Allows tests to show up dialogs      -->
   <!--                                                             -->
-  <!--     image.tests        Run image comparison tests if        --> 
+  <!--     image.tests        Run image comparison tests if        -->
   <!--                        perceptualdiff in on the path        -->
   <!--                                                             -->
   <!--     interactive.image  Image comparison will show           -->
@@ -107,7 +107,7 @@
          <property><name>all</name></property>
        </activation>
       <modules>
-        <module>docs</module>      
+        <module>docs</module>
       </modules>
     </profile>
     <profile>
@@ -617,7 +617,7 @@
         <artifactId>jai_imageio</artifactId>
         <version>1.1</version>
       </dependency>
-      
+
       <!-- ImageIO-Ext -->
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
@@ -653,12 +653,12 @@
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-gdalkakadujp2</artifactId>
         <version>${imageio.ext.version}</version>
-      </dependency>     
+      </dependency>
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-gdalidrisi</artifactId>
         <version>${imageio.ext.version}</version>
-      </dependency>           
+      </dependency>
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-gdalmrsidjp2</artifactId>
@@ -718,17 +718,17 @@
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-geocore</artifactId>
         <version>${imageio.ext.version}</version>
-      </dependency> 
+      </dependency>
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-hdf4</artifactId>
         <version>${imageio.ext.version}</version>
-      </dependency>   
+      </dependency>
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
         <artifactId>imageio-ext-grib1</artifactId>
         <version>${imageio.ext.version}</version>
-      </dependency>                          
+      </dependency>
 
       <!-- JAITools -->
       <dependency>
@@ -740,13 +740,13 @@
         <groupId>org.jaitools</groupId>
         <artifactId>jt-vectorbinarize</artifactId>
         <version>${jt.version}</version>
-      </dependency> 
+      </dependency>
       <dependency>
         <groupId>org.jaitools</groupId>
         <artifactId>jt-zonalstats</artifactId>
         <version>${jt.version}</version>
        </dependency>
-      
+
       <!-- Mathematic, geometries, SVG... -->
       <dependency>
         <groupId>java3d</groupId>
@@ -840,7 +840,7 @@
         <artifactId>eastwood</artifactId>
         <version>1.1.1-SNAPSHOT</version>
       </dependency>
-    
+
       <!-- XML -->
       <dependency>
         <groupId>jdom</groupId>
@@ -1127,11 +1127,11 @@
           <target>1.6</target>  <!-- The -target argument for the Java compiler. -->
           <debug>true</debug>   <!-- Whether to include debugging information.   -->
           <encoding>UTF-8</encoding> <!-- The -encoding argument for the Java compiler. -->
-          <!-- 
+          <!--
                On java6 the build oom's otherwise due to the compiler accumulating
-               too many classes in the permanent generation, see GEOT-2462  
+               too many classes in the permanent generation, see GEOT-2462
           -->
-          <fork>${fork.javac}</fork> 
+          <fork>${fork.javac}</fork>
         </configuration>
       </plugin>
 
@@ -1212,7 +1212,7 @@
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
+              <!--addClasspath>true</addClasspath-->
             </manifest>
             <manifestEntries>
               <Project-Version>${project.version}</Project-Version>
@@ -1268,7 +1268,7 @@
             </entries>
          </configuration>
      </plugin>
-      
+
     </plugins>
   </build>
 
@@ -1421,7 +1421,7 @@
       <releases>
         <enabled>true</enabled>
       </releases>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
       <snapshots>
         <enabled>true</enabled>
@@ -1429,7 +1429,7 @@
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
-    </pluginRepository> 
+    </pluginRepository>
   </pluginRepositories>
 
 
