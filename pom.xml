@@ -573,7 +573,7 @@
         <artifactId>jai_imageio</artifactId>
         <version>1.1</version>
       </dependency>
-      
+
       <!-- ImageIO-Ext -->
       <dependency>
         <groupId>it.geosolutions.imageio-ext</groupId>
@@ -655,7 +655,7 @@
         <artifactId>imageio-ext-utilities</artifactId>
         <version>${imageio.ext.version}</version>
       </dependency>
-      
+
       <!-- JAITools -->
       <dependency>
         <groupId>com.googlecode.jaitools</groupId>
@@ -667,7 +667,7 @@
         <artifactId>jt-vectorbinarize</artifactId>
         <version>${jt.version}</version>
       </dependency>
-    
+
       <!-- Mathematic, geometries, SVG... -->
       <dependency>
         <groupId>java3d</groupId>
@@ -761,7 +761,7 @@
         <artifactId>eastwood</artifactId>
         <version>1.1.1-SNAPSHOT</version>
       </dependency>
-    
+
       <!-- XML -->
       <dependency>
         <groupId>jdom</groupId>
@@ -1041,11 +1041,11 @@
           <target>1.5</target>  <!-- The -target argument for the Java compiler. -->
           <debug>true</debug>   <!-- Whether to include debugging information.   -->
           <encoding>UTF-8</encoding> <!-- The -encoding argument for the Java compiler. -->
-          <!-- 
+          <!--
                On java6 the build oom's otherwise due to the compiler accumulating
-               too many classes in the permanent generation, see GEOT-2462  
+               too many classes in the permanent generation, see GEOT-2462
           -->
-          <fork>true</fork> 
+          <fork>true</fork>
         </configuration>
       </plugin>
 
@@ -1133,7 +1133,7 @@
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
+              <!--addClasspath>true</addClasspath-->
             </manifest>
             <manifestEntries>
               <Project-Version>${project.version}</Project-Version>
@@ -1189,7 +1189,7 @@
             </entries>
          </configuration>
       </plugin>
-      
+
       <!-- ======================================================= -->
       <!--     Git revision info.                                  -->
       <!-- ======================================================= -->
@@ -1351,7 +1351,7 @@
       <releases>
         <enabled>true</enabled>
       </releases>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
       <snapshots>
         <enabled>true</enabled>
@@ -1359,7 +1359,7 @@
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
      <id>sonatype-snapshots</id>
      <name>sonatype-snapshots</name>
