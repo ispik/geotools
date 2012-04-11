@@ -1,7 +1,7 @@
 /*
  *    GeoTools - The Open Source Java GIS Toolkit
  *    http://geotools.org
- * 
+ *
  *    (C) 2007-2008, Open Source Geospatial Foundation (OSGeo)
  *
  *    This library is free software; you can redistribute it and/or
@@ -74,9 +74,9 @@ import org.geotools.util.Version;
  */
 public final class GeoTools {
     /**
-     * Properties about this geotools build 
+     * Properties about this geotools build
      */
-    private static final Properties PROPS;  
+    private static final Properties PROPS;
     static {
         Properties props = new Properties();
         try {
@@ -104,12 +104,12 @@ public final class GeoTools {
             }
         }
     }
-    
+
     /**
      * The current GeoTools version. The separator character must be the dot.
      */
     private static final Version VERSION = new Version(PROPS.getProperty("version", "2.7-SNAPSHOT"));
-    private static final Version VERSION = new Version(PROPS.getProperty("version", "2.7.4"));
+    private static final Version VERSION = new Version(PROPS.getProperty("version", "2.7.4-ispik"));
 
     /**
      * The version control (svn) revision at which this version of geotools was built.
@@ -126,8 +126,8 @@ public final class GeoTools {
     /**
      * The timestamp at which this version of geotools was built.
      */
-    private static final String BUILD_TIMESTAMP = PROPS.getProperty("build.timestamp", ""); 
-        
+    private static final String BUILD_TIMESTAMP = PROPS.getProperty("build.timestamp", "");
+
     /**
      * Object to inform about system-wide configuration changes.
      * We use the Swing utility listener list since it is lightweight and thread-safe.
@@ -195,7 +195,7 @@ public final class GeoTools {
     static {
         bind(FORCE_LONGITUDE_FIRST_AXIS_ORDER, Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER);
     }
-    
+
     /**
      * The {@linkplain System#getProperty(String) system property} key for the default
      * value to be assigned to the {@link Hints#
@@ -249,31 +249,31 @@ public final class GeoTools {
     }
 
     /**
-     * Returns summary information about GeoTools and the current environment. 
+     * Returns summary information about GeoTools and the current environment.
      * Calls {@linkplain #getEnvironmentInfo()} followed by {@linkplain #getGeoToolsJarInfo()}
      * and concatenates their results.
-     * 
+     *
      * @return requested information as a string
      */
     public static String getAboutInfo() {
         final StringBuilder sb = new StringBuilder();
-        
+
         sb.append(getEnvironmentInfo());
         sb.append(String.format("%n"));
         sb.append(getGeoToolsJarInfo());
-        
+
         return sb.toString();
     }
-    
+
     /**
      * Returns summary information about the GeoTools version and the host environment.
-     * 
+     *
      * @return information as a String
      */
     public static String getEnvironmentInfo() {
         final String newline = String.format("%n");
         final String indent = "    ";
-        
+
         final StringBuilder sb = new StringBuilder();
         sb.append("GeoTools version ").append(getVersion().toString());
         if (sb.toString().endsWith("SNAPSHOT")) {
@@ -285,20 +285,20 @@ public final class GeoTools {
 
         sb.append(newline).append("Operating system: ");
         sb.append(System.getProperty("os.name")).append(' ').append(System.getProperty("os.version"));
-        
+
         return sb.toString();
     }
 
     /**
      * Returns the names of the GeoTools jars on the classpath.
-     * 
+     *
      * @return list of jars as a formatted string
      */
     public static String getGeoToolsJarInfo() {
         final StringBuilder sb = new StringBuilder();
         final String newline = String.format("%n");
         final String indent = "    ";
-        
+
         sb.append("GeoTools jars on classpath:");
         for (String jarName : getGeoToolsJars()) {
             sb.append(newline).append(indent).append(jarName);
@@ -308,15 +308,15 @@ public final class GeoTools {
     }
 
     /**
-     * A helper method for {@linkplain #getGeoToolsJarInfo} which scans the 
+     * A helper method for {@linkplain #getGeoToolsJarInfo} which scans the
      * classpath looking for GeoTools jars matching the current version.
-     * 
-     * @return a list of jar names 
+     *
+     * @return a list of jar names
      */
     private static List<String> getGeoToolsJars() {
         final Pattern pattern = Pattern.compile(".*\\/" + getVersion() + "\\/(gt-.*jar$)");
         final List<String> jarNames = new ArrayList<String>();
-        
+
         String pathSep = System.getProperty("path.separator");
         String classpath = System.getProperty("java.class.path");
         StringTokenizer st = new StringTokenizer(classpath, pathSep);
@@ -327,11 +327,11 @@ public final class GeoTools {
                 jarNames.add(matcher.group(1));
             }
         }
-        
+
         Collections.sort(jarNames);
         return jarNames;
     }
-    
+
     /**
      * Reports back the version of GeoTools being used.
      *
@@ -340,10 +340,10 @@ public final class GeoTools {
     public static Version getVersion(){
          return VERSION;
     }
-    
+
     /**
-     * Reports back the vcs revision at which the version of GeoTools was built. 
-     * 
+     * Reports back the vcs revision at which the version of GeoTools was built.
+     *
      * @return The svn revision.
      */
     public static String getBuildRevision() {
@@ -351,8 +351,8 @@ public final class GeoTools {
     }
 
     /**
-     * Reports back the timestamp at which the version of GeoTools of built. 
-     * 
+     * Reports back the timestamp at which the version of GeoTools of built.
+     *
      * @return The build timestamp.
      */
     public static String getBuildTimestamp() {
