@@ -284,6 +284,7 @@ public class JDBCFeatureSource extends ContentFeatureSource {
                     ab.nillable(false);
                     ab.minOccurs(1);
                 }
+                ab.setDefaultValue(null);
                 
                 AttributeDescriptor att = null;
                 

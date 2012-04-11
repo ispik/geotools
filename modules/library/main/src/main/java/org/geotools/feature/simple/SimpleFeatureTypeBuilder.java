@@ -634,6 +634,9 @@ public class SimpleFeatureTypeBuilder {
 
 	    AttributeDescriptor descriptor = null;
 	    
+        if (!attributeBuilder.isDefaultValueSet()) {
+            attributeBuilder.setDefaultValue(null);
+        }
 	    attributeBuilder.setBinding(binding);
         attributeBuilder.setName(name);
         
@@ -741,6 +744,9 @@ public class SimpleFeatureTypeBuilder {
 	 * @param crs The crs of of the geometry, may be <code>null</code>.
 	 */
 	public void add(String name, Class binding, CoordinateReferenceSystem crs ) {
+        if (!attributeBuilder.isDefaultValueSet()) {
+            attributeBuilder.setDefaultValue(null);
+        }
 		attributeBuilder.setBinding(binding);
 		attributeBuilder.setName(name);
 		attributeBuilder.setCRS(crs);

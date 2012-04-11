@@ -510,6 +510,8 @@ public final class StyledShapePainter {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.finest("drawing Image @" + x + "," + y);
         }
+        x = Math.round(x + 0.5);
+        y = Math.round(y + 0.5);
 
         AffineTransform markAT = new AffineTransform();
         markAT.translate(x, y);
