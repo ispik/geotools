@@ -151,6 +151,8 @@ public final class LabelCacheImpl implements LabelCache {
 
     private boolean needsOrdering = false;
 
+    private float currentOpacity = 1.0f;
+
     public void enableLayer(String layerId) {
         needsOrdering = true;
         enabledLayers.add(layerId);
@@ -221,9 +223,10 @@ public final class LabelCacheImpl implements LabelCache {
     /**
      * @see org.geotools.renderer.lite.LabelCache#startLayer()
      */
-    public void startLayer(String layerId) {
+    public void startLayer(String layerId, Float labelsOpacity) {
         enabledLayers.add(layerId);
         activeLayers.add(layerId);
+        currentOpacity = labelsOpacity == null ? 1.0f : labelsOpacity;
     }
 
     /**
@@ -348,6 +351,8 @@ public final class LabelCacheImpl implements LabelCache {
         item.setPolygonAlign((PolygonAlignOptions) getEnumOption(symbolizer, POLYGONALIGN_KEY, DEFAULT_POLYGONALIGN));
         item.setGraphicsResize(getGraphicResize(symbolizer));
         item.setGraphicMargin(getGraphicMargin(symbolizer));
+        item.setShadowHalo(getBooleanOption(symbolizer, SHADOW_HALO_KEY, DEFAULT_SHADOW_HALO));
+        item.setOpacity(currentOpacity);
         return item;
     }
     
@@ -554,7 +559,7 @@ public final class LabelCacheImpl implements LabelCache {
         } else {
             items = getActiveLabels();
         }
-        LabelPainter painter = new LabelPainter(graphics, labelRenderingMode);
+        LabelPainter painter = new LabelPainter(graphics, labelRenderingMode, displayArea);
         for (LabelCacheItem labelItem : items) {
             if (stop)
                 return;
@@ -596,6 +601,7 @@ public final class LabelCacheImpl implements LabelCache {
                 e.printStackTrace();
             }
         }
+        painter.finish();
     }
 
     private Envelope toEnvelope(Rectangle2D bounds) {

@@ -25,8 +25,12 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.text.Bidi;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Icon;
 
@@ -96,6 +100,8 @@ public class TextStyle2D extends Style2D {
     Composite haloComposite;
     float haloRadius;
     Style2D graphic;
+    Set<TextDecoration> decorations;
+    Map<TextAttribute, Object> textAttributes;
 
 
     /** Holds value of property fill. */
@@ -128,6 +134,8 @@ public class TextStyle2D extends Style2D {
         this.pointPlacement = t.pointPlacement;
         this.rotation = t.rotation;
         this.textGlyphVector = t.textGlyphVector;
+        this.decorations = t.decorations;
+        this.textAttributes = t.textAttributes == null ? null : new HashMap<TextAttribute, Object>(t.textAttributes);
     }
 
     /**
@@ -219,6 +227,7 @@ public class TextStyle2D extends Style2D {
      */
     public void setFont(Font font) {
         this.font = font;
+        textAttributes = null;
     }
 
     /**
@@ -381,6 +390,27 @@ public class TextStyle2D extends Style2D {
      */
     public Style2D getGraphic() {
     	return graphic;
+    }
+
+    public void setDecorations(Set<TextDecoration> decorations) {
+        this.decorations = decorations;
+        textAttributes = null;
+    }
+
+    public Set<TextDecoration> getDecorations() {
+        return decorations;
+    }
+
+    public Map<TextAttribute, Object> getTextAttributes() {
+        if (textAttributes == null) {
+            textAttributes = new HashMap<TextAttribute, Object>(font.getAttributes());
+            if (decorations != null) {
+                for (TextDecoration decoration : decorations) {
+                    decoration.enableDecoration(textAttributes);
+                }
+            }
+        }
+        return textAttributes;
     }
     
     public Rectangle getGraphicDimensions() {

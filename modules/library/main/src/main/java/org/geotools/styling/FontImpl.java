@@ -46,6 +46,7 @@ public class FontImpl implements Font, Cloneable {
     private Expression fontSize = null;
     private Expression fontStyle = null;
     private Expression fontWeight = null;
+    private Expression textDecoration = null;
 
     /**
      * Creates a new instance of DefaultFont
@@ -105,6 +106,14 @@ public class FontImpl implements Font, Cloneable {
     @Deprecated
     public void setFontSize(Expression fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public Expression getTextDecoration() {
+        return textDecoration;
+    }
+
+    public void setTextDecroration(Expression decoration) {
+        textDecoration = decoration;
     }
 
     /**
@@ -199,6 +208,10 @@ public class FontImpl implements Font, Cloneable {
             result = (PRIME * result) + fontWeight.hashCode();
         }
 
+        if (textDecoration != null) {
+            result = (PRIME * result) + textDecoration.hashCode();
+        }
+
         return result;
     }
 
@@ -225,7 +238,8 @@ public class FontImpl implements Font, Cloneable {
             return Utilities.equals(this.fontFamily, other.fontFamily)
             && Utilities.equals(this.fontSize, other.fontSize)
             && Utilities.equals(this.fontStyle, other.fontStyle)
-            && Utilities.equals(this.fontWeight, other.fontWeight);
+            && Utilities.equals(this.fontWeight, other.fontWeight)
+            && Utilities.equals(this.textDecoration, other.textDecoration);
         }
 
         return false;

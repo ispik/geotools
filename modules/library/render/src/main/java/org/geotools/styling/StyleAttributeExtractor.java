@@ -37,6 +37,13 @@ import org.opengis.filter.expression.Literal;
  */
 public class StyleAttributeExtractor extends FilterAttributeExtractor
     implements StyleVisitor {
+    public StyleAttributeExtractor() {
+        this(false);
+    }
+
+    public StyleAttributeExtractor(boolean ignoreLabels) {
+        this.ignoreLabels = ignoreLabels;
+    }
 
     /**
      *   if the default geometry is used, this will be true.  See GEOS-469
@@ -253,6 +260,10 @@ public class StyleAttributeExtractor extends FilterAttributeExtractor
      * @see org.geotools.styling.StyleVisitor#visit(org.geotools.styling.TextSymbolizer)
      */
     public void visit(TextSymbolizer text) {
+        if (ignoreLabels) {
+            return;
+        }
+
         if (text.getGeometry() != null) {
             text.getGeometry().accept(this, null);
         } else {
@@ -537,4 +548,6 @@ public class StyleAttributeExtractor extends FilterAttributeExtractor
         sr.accept(this);
         
     }
+
+    private final boolean ignoreLabels;
 }

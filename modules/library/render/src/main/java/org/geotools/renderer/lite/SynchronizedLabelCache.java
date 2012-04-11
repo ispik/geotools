@@ -85,8 +85,8 @@ public class SynchronizedLabelCache implements LabelCache {
         wrapped.put( area );
     }
     
-    public synchronized void startLayer( String layerId ) {
-        wrapped.startLayer(layerId);
+    public synchronized void startLayer( String layerId, Float labelsOpacity ) {
+        wrapped.startLayer(layerId, labelsOpacity);
     }
 
     

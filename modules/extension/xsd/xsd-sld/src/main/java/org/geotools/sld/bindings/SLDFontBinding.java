@@ -125,6 +125,7 @@ public class SLDFontBinding extends AbstractComplexBinding {
         Expression style = null;
         Expression weight = null;
         Expression size = null;
+        Expression decoration = null;
 
         for (Iterator i = node.getChildValues(CssParameter.class).iterator(); i.hasNext();) {
             CssParameter css = (CssParameter) i.next();
@@ -149,8 +150,14 @@ public class SLDFontBinding extends AbstractComplexBinding {
             if ("font-size".equals(css.getName())) {
                 size = exp;
             }
+
+            if ("text-decoration".equals(css.getName())) {
+                decoration = exp;
+            }
         }
 
-        return styleFactory.font(family, style, weight, size);
+        Font font = styleFactory.font(family, style, weight, size);
+        font.setTextDecroration(decoration);
+        return font;
     }
 }

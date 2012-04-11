@@ -2190,6 +2190,8 @@ public class SLDParser {
                     font.setFontSize(parseCssParameter(child));
                 } else if (res.equalsIgnoreCase("font-weight")) {
                     font.setFontWeight(parseCssParameter(child));
+                } else if (res.equalsIgnoreCase("text-decoration")) {
+                    font.setTextDecroration(parseCssParameter(child));
                 }
             }
         }
