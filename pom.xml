@@ -1256,7 +1256,7 @@
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
+              <!--addClasspath>true</addClasspath-->
             </manifest>
             <manifestEntries>
               <Project-Version>${project.version}</Project-Version>
@@ -1477,7 +1477,7 @@
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
-    </pluginRepository> 
+    </pluginRepository>
     <pluginRepository>
      <id>sonatype-snapshots</id>
      <name>sonatype-snapshots</name>
