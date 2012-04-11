@@ -2325,7 +2325,7 @@ public class StreamingRenderer implements GTRenderer {
                 
                 if (symbolizer instanceof TextSymbolizer && drawMe.content instanceof Feature) {
                     if (drawLabels) {
-                        labelCache.put(layerId, (TextSymbolizer) symbolizer, (SimpleFeature) drawMe.content,
+                        labelCache.put(layerId, (TextSymbolizer) symbolizer, (Feature) drawMe.content,
                                 shape, scaleRange);
                     }
                 } else {
@@ -2401,7 +2401,7 @@ public class StreamingRenderer implements GTRenderer {
         } else if (drawMe instanceof Feature) {
             geom = (Geometry) ((Feature) drawMe).getDefaultGeometryProperty().getValue();
         } else {
-            geom = (Geometry) defaultGeometryPropertyName.evaluate(drawMe, Geometry.class);
+            geom = defaultGeometryPropertyName.evaluate(drawMe, Geometry.class);
         }
         return geom;
     }
