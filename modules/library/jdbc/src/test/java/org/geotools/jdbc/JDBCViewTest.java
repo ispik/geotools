@@ -48,6 +48,7 @@ public abstract class JDBCViewTest extends JDBCTestSupport {
         atb.setNillable(isPkNillable());
         atb.setName(FID);
         atb.setBinding(Integer.class);
+        atb.setDefaultValue(null);
         AttributeDescriptor fidDescriptor = atb.buildDescriptor(FID);
         
         SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
