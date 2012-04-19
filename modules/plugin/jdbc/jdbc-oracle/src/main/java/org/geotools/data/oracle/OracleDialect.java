@@ -46,6 +46,7 @@ import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.PreparedFilterToSQL;
 import org.geotools.jdbc.PreparedStatementSQLDialect;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.ReferencingFactoryFinder;
 import org.geotools.util.SoftValueHashMap;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -130,6 +131,8 @@ public class OracleDialect extends PreparedStatementSQLDialect {
      * Whether to use estimated extents to build
      */
     boolean estimatedExtentsEnabled = false;
+
+    boolean forceLongitudeLatitudeAxisOrder = false;
     
     /**
      * Stores srid and their nature, true if geodetic, false otherwise. Avoids repeated
@@ -160,6 +163,15 @@ public class OracleDialect extends PreparedStatementSQLDialect {
 
     public void setEstimatedExtentsEnabled(boolean estimatedExtenstEnabled) {
         this.estimatedExtentsEnabled = estimatedExtenstEnabled;
+    }
+
+    @Override
+    public boolean isForceLongitudeLatitudeAxisOrder() {
+        return forceLongitudeLatitudeAxisOrder;
+    }
+
+    public void setForceLongitudeLatitudeAxisOrder(boolean forceLongitudeLatitudeAxisOrder) {
+        this.forceLongitudeLatitudeAxisOrder = forceLongitudeLatitudeAxisOrder;
     }
 
     /**
@@ -586,7 +598,7 @@ public class OracleDialect extends PreparedStatementSQLDialect {
                 String wkt = rs.getString(1);
                 if ( wkt != null ) {
                     try {
-                        return CRS.parseWKT(wkt);
+                        return ReferencingFactoryFinder.getCRSFactory(new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, forceLongitudeLatitudeAxisOrder)).createFromWKT(wkt);
                     } catch(Exception e) {
                         if(LOGGER.isLoggable(Level.FINE))
                             LOGGER.log(Level.FINE, "Could not parse WKT " + wkt, e);
