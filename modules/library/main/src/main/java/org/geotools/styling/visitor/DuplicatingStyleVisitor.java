@@ -553,6 +553,7 @@ public class DuplicatingStyleVisitor implements StyleVisitor {
         Expression fontWeight = copy( font.getFontWeight() );
         Expression fontSize = copy( font.getFontSize() );
         Font copy = sf.createFont(fontFamily, fontStyle, fontWeight, fontSize);
+        copy.setTextDecroration(font.getTextDecoration());
         return copy;
     }
     

@@ -48,8 +48,9 @@ public interface LabelCache {
 	 * set of active layers.
 	 * 
 	 * @param layerId an id for the layer
+     * @param labelsOpacity
 	 */
-	void startLayer(String layerId);
+	void startLayer(String layerId, Float labelsOpacity);
 	
 	/**
 	 * Puts a Label in the cache.

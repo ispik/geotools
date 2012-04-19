@@ -29,11 +29,8 @@ import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.SchemaException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.map.event.MapLayerListener;
 import org.geotools.styling.Style;
 import org.opengis.coverage.grid.GridCoverage;
-import org.opengis.feature.Feature;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.TransformException;
 
@@ -375,6 +372,87 @@ public class MapLayer {
      */
     public void setVisible(boolean visible){
         internal.setVisible(visible);
+    }
+
+    public boolean isVisibleAtScale(double scaleDenominator) {
+        return internal.isVisibleAtScale(scaleDenominator);
+    }
+    
+    public void setMinScaleDenominator(Double minScaleDenominator) {
+        internal.setMinScaleDenominator(minScaleDenominator);
+    }
+    
+    public void setMaxScaleDenominator(Double maxScaleDenominator) {
+        internal.setMaxScaleDenominator(maxScaleDenominator);
+    }
+    
+    public boolean getDrawLabels() {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getDrawLabels();
+        }
+        return true;
+    }
+    
+    public boolean getDrawLabelsAtScale(double scaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getDrawLabelsAtScale(scaleDenominator);
+        }
+        return true;
+    }
+    
+    public void setDrawLabels(boolean drawLabels) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setDrawLabels(drawLabels);
+        } else {
+            throw new IllegalStateException("DrawLabels not supported by " + internal);
+        }
+    }
+    
+    public void setLabelMinScaleDenominator(Double labelMinScaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelMinScaleDenominator(labelMinScaleDenominator);
+        } else {
+            throw new IllegalStateException("LabelMinScaleDenominator not supported by " + internal);
+        }
+    }
+    
+    public void setLabelMaxScaleDenominator(Double labelMaxScaleDenominator) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelMaxScaleDenominator(labelMaxScaleDenominator);
+        } else {
+            throw new IllegalStateException("LabelMaxScaleDenominator not supported by " + internal);
+        }
+    }
+    
+    public Float getLayerOpacity() {
+        return internal.getLayerOpacity();
+    }
+
+    public void setLayerOpacity(Float opacity) {
+        internal.setLayerOpacity(opacity);
+    }
+
+    public Float getLabelOpacity() {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            return featureLayer.getLabelOpacity();
+        } else {
+            return null;
+        }
+    }
+
+    public void setLabelOpacity(Float opacity) {
+        if (internal instanceof FeatureLayer) {
+            FeatureLayer featureLayer = (FeatureLayer)internal;
+            featureLayer.setLabelOpacity(opacity);
+        } else {
+            throw new IllegalStateException("LabelOpacity not supported by " + internal);
+        }
     }
 
     /**

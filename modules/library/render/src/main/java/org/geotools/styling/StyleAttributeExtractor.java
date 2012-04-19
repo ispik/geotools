@@ -43,6 +43,13 @@ import org.opengis.filter.expression.PropertyName;
  */
 public class StyleAttributeExtractor extends FilterAttributeExtractor
     implements StyleVisitor {
+    public StyleAttributeExtractor() {
+        this(false);
+    }
+
+    public StyleAttributeExtractor(boolean ignoreLabels) {
+        this.ignoreLabels = ignoreLabels;
+    }
     
     /* NC */ protected Set<PropertyName> attributes = new HashSet<PropertyName>();
     
@@ -283,6 +290,10 @@ public class StyleAttributeExtractor extends FilterAttributeExtractor
      * @see org.geotools.styling.StyleVisitor#visit(org.geotools.styling.TextSymbolizer)
      */
     public void visit(TextSymbolizer text) {
+        if (ignoreLabels) {
+            return;
+        }
+
         if (text.getGeometry() != null) {
             text.getGeometry().accept(this, null);
         } else {
@@ -559,4 +570,6 @@ public class StyleAttributeExtractor extends FilterAttributeExtractor
         sr.accept(this);
         
     }
+
+    private final boolean ignoreLabels;
 }

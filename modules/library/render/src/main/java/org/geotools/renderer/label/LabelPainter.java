@@ -23,7 +23,9 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineBreakMeasurer;
@@ -31,6 +33,7 @@ import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
@@ -45,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.media.jai.Interpolation;
 import javax.swing.Icon;
 
 import org.geotools.geometry.jts.LiteShape2;
@@ -57,6 +59,7 @@ import org.geotools.renderer.style.GraphicStyle2D;
 import org.geotools.renderer.style.IconStyle2D;
 import org.geotools.renderer.style.MarkStyle2D;
 import org.geotools.renderer.style.Style2D;
+import org.geotools.renderer.style.TextDecoration;
 import org.geotools.renderer.style.TextStyle2D;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -98,7 +101,7 @@ public class LabelPainter {
     /**
      * The graphics object used during painting
      */
-    Graphics2D graphics;
+    LabelPainterGraphics graphics;
 
     /**
      * Whether we draw text using its {@link Shape} outline, or we use a plain
@@ -122,8 +125,9 @@ public class LabelPainter {
      * @param graphics
      * @param outlineRenderingEnabled
      */
-    public LabelPainter(Graphics2D graphics, LabelRenderingMode labelRenderingMode) {
-        this.graphics = graphics;
+    public LabelPainter(Graphics2D graphics, LabelRenderingMode labelRenderingMode, 
+            Rectangle displayArea) {
+        this.graphics = new LabelPainterGraphics(graphics, displayArea);
         this.labelRenderingMode = labelRenderingMode;
     }
 
@@ -136,6 +140,7 @@ public class LabelPainter {
      */
     public void setLabel(LabelCacheItem labelItem) {
         this.labelItem = labelItem;
+        graphics.setOpacity(labelItem.getOpacity());
         labelItem.getTextStyle().setLabel(labelItem.getLabel());
 
         // reset previous caches
@@ -266,6 +271,10 @@ public class LabelPainter {
             info.y = labelY;
         }
         normalizeBounds(labelBounds);
+    }
+
+    public void finish() {
+        graphics.merge();
     }
 
     /**
@@ -476,7 +485,7 @@ public class LabelPainter {
 
             // draw the label
             if (lines.size() == 1) {
-                drawGlyphVector(lines.get(0).gv);
+                drawGlyphVector(lines.get(0));
             } else {
                 // for multiline labels we have to go thru the lines and apply
                 // the proper transformation
@@ -486,7 +495,7 @@ public class LabelPainter {
                     lineTx.setTransform(transform);
                     lineTx.translate(line.x, line.y);
                     graphics.setTransform(lineTx);
-                    drawGlyphVector(line.gv);
+                    drawGlyphVector(line);
                 }
             }
         } finally {
@@ -596,13 +605,15 @@ public class LabelPainter {
     /**
      * Draws the glyph vector respecting the label item options
      * 
-     * @param gv
+     * @param lineInfo
      */
-    private void drawGlyphVector(GlyphVector gv) {
+    private void drawGlyphVector(LineInfo lineInfo) {
+        GlyphVector gv = lineInfo.gv;
         java.awt.Shape outline = gv.getOutline();
-        if (labelItem.getTextStyle().getHaloFill() != null) {
+        TextStyle2D textStyle = labelItem.getTextStyle();
+        if (textStyle.getHaloFill() != null) {
             configureHalo();
-            graphics.draw(outline);
+            drawHalo(outline);
         }
         configureLabelStyle();
         
@@ -618,6 +629,25 @@ public class LabelPainter {
                 graphics.drawGlyphVector(gv, 0, 0);
             }
         }
+        if (textStyle.getDecorations() != null) {
+            Stroke savedStroke = graphics.getStroke();
+            float width = (float)(lineInfo.layout.getBounds().getWidth());
+            LineMetrics flm = textStyle.getFont().getLineMetrics(
+                    lineInfo.text, graphics.getFontRenderContext());
+            if (textStyle.getDecorations().contains(TextDecoration.UNDERLINE)) {
+                graphics.setStroke(new BasicStroke(flm.getUnderlineThickness(),
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER));
+                graphics.draw(new Line2D.Float(0, flm.getUnderlineOffset(), width, flm.getUnderlineOffset()));
+            }
+            if (textStyle.getDecorations().contains(TextDecoration.LINE_THROUGH)) {
+                graphics.setStroke(new BasicStroke(flm.getStrikethroughThickness(),
+                        BasicStroke.CAP_BUTT,
+                        BasicStroke.JOIN_MITER));
+                graphics.draw(new Line2D.Float(0, flm.getStrikethroughOffset(), width, flm.getStrikethroughOffset()));
+            }
+            graphics.setStroke(savedStroke);
+        }
     }
 
     /**
@@ -626,10 +656,25 @@ public class LabelPainter {
     private void configureHalo() {
         graphics.setPaint(labelItem.getTextStyle().getHaloFill());
         graphics.setComposite(labelItem.getTextStyle().getHaloComposite());
-        float haloRadius = labelItem.getTextStyle().getHaloFill() != null ? labelItem.getTextStyle().getHaloRadius() : 0;
-        graphics.setStroke(new BasicStroke(2 * haloRadius, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        float haloRadius = labelItem.getTextStyle().getHaloRadius();
+        float radius = labelItem.isShadowHalo() ? haloRadius : 2 * haloRadius;
+        graphics.setStroke(new BasicStroke(radius, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     }
 
+    private void drawHalo(Shape outline) {
+        if (labelItem.isShadowHalo()) {
+            float offset = labelItem.getTextStyle().getHaloRadius() * 0.5f;
+            AffineTransform oldTransform = graphics.getTransform();
+            AffineTransform tx = new AffineTransform(oldTransform);
+            tx.translate(offset, offset);
+            graphics.setTransform(tx);
+            graphics.draw(outline);
+            graphics.setTransform(oldTransform);
+        } else {
+            graphics.draw(outline);
+        }
+    }
+    
     /**
      * Configures the graphic to do the text drawing
      */
@@ -716,7 +761,7 @@ public class LabelPainter {
                 configureHalo();
                 for (int i = 0; i < numGlyphs; i++) {
                     graphics.setTransform(transforms[i]);
-                    graphics.draw(outlines[i]);
+                    drawHalo(outlines[i]);
                 }
             }
             configureLabelStyle();
