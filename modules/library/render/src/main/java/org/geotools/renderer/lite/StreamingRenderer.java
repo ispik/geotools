@@ -1450,7 +1450,7 @@ public class StreamingRenderer implements GTRenderer {
      */
     private List<PropertyName> findStyleAttributes(LiteFeatureTypeStyle[] styles,
             FeatureType schema, boolean drawLabels) {
-        final StyleAttributeExtractor sae = new StyleAttributeExtractor(drawLabels);
+        final StyleAttributeExtractor sae = new StyleAttributeExtractor(!drawLabels);
 
         LiteFeatureTypeStyle lfts;
         Rule[] rules;
