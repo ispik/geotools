@@ -56,7 +56,7 @@
   <!--     Build Configuration                                     -->
   <!--         copies all JARs in a single directory.              -->
   <!-- =========================================================== -->
-  <build>
+  <!--build>
     <plugins>
       <plugin>
         <groupId>org.geotools.maven</groupId>
@@ -71,7 +71,7 @@
         </executions>
       </plugin>
     </plugins>
-  </build>
+  </build-->
   
 
   <reporting>
