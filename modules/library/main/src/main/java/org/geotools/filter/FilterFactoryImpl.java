@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.geotools.factory.AbstractFactory;
 import org.geotools.factory.Hints;
 import org.geotools.factory.Hints.Key;
 import org.geotools.filter.capability.ArithmeticOperatorsImpl;
@@ -169,7 +171,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @source $URL$
  * @version $Id$
  */
-public class FilterFactoryImpl implements FilterFactory {
+public class FilterFactoryImpl extends AbstractFactory implements FilterFactory {
         
     private FunctionFinder functionFinder;
 
@@ -180,6 +182,11 @@ public class FilterFactoryImpl implements FilterFactory {
         this( null );
     }
     public FilterFactoryImpl( Hints hints ){
+        functionFinder = new FunctionFinder( null );
+    }
+
+    protected FilterFactoryImpl(int priority) {
+        super(priority);
         functionFinder = new FunctionFinder( null );
     }
 
