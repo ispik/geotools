@@ -16,7 +16,10 @@
  */
 package org.geotools.styling;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,6 +48,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 /**
  * TODO: This really needs to be container ready
@@ -430,11 +437,17 @@ public class SLDParser {
      * @param child
      * @return
      */
-    String getFirstChildValue(Node child) {
+    private static String getFirstChildValue(Node child) {
         if(child.getFirstChild() != null)
             return child.getFirstChild().getNodeValue();
         else
             return null;
+    }
+
+    private static String getAttribute(Node node, String attrName) {
+        NamedNodeMap attributes = node.getAttributes();
+        Node attribute = attributes.getNamedItem(attrName);
+        return attribute == null ? null : attribute.getNodeValue();
     }
 
     private StyledLayer parseUserLayer(Node root) {
@@ -518,6 +531,15 @@ public class SLDParser {
             return null;
         else
             return ftc;
+    }
+
+    private static Icon parseIcon(String content) throws IOException {
+        byte[] bytes = Base64.decode(content);
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
+        if (image == null) {
+            throw new IOException("invalid image content");
+        }
+        return new ImageIcon(image);
     }
 
     protected RemoteOWS parseRemoteOWS(Node root) {
@@ -1624,6 +1646,7 @@ public class SLDParser {
 
         String format = "";
         String uri = "";
+        String content = null;
         Map<String, Object> paramList = new HashMap<String, Object>();
 
         NodeList children = root.getChildNodes();
@@ -1638,7 +1661,20 @@ public class SLDParser {
             if (childName == null) {
                 childName = child.getNodeName();
             }
-            if (childName.equalsIgnoreCase("OnLineResource")) {
+            if (childName.equalsIgnoreCase("InlineContent")) {
+                String contentEncoding = getAttribute(child, "encoding");
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest("inline content with encoding " + contentEncoding);
+                }
+                if ("base64".equals(contentEncoding)) {
+                    content = getFirstChildValue(child);
+                } else {
+                    content = "";
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.warning("could not process <" + contentEncoding + "> content encoding");
+                    }
+                }
+            } else if (childName.equalsIgnoreCase("OnLineResource")) {
                 uri = parseOnlineResource(child);
             }
 
@@ -1659,33 +1695,54 @@ public class SLDParser {
             }
         }
 
-        URL url = null;
-        try {
-            url = new URL(uri);
-        } catch (MalformedURLException mfe) {
-            LOGGER.fine("Looks like " + uri + " is a relative path..");
-            if (sourceUrl != null) {
+        ExternalGraphic extgraph;
+        if (content != null) {
+            Icon icon = null;
+            if (content.length() > 0) {
                 try {
-                    url = new URL(sourceUrl, uri);
-                } catch (MalformedURLException e) {
-                    LOGGER.warning("can't parse " + uri + " as relative to"
-                            + sourceUrl.toExternalForm());
+                    icon = parseIcon(content);
+                }
+                catch (IOException e) {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.log(Level.WARNING, "could not parse graphic inline content: " + content, e);
+                    }
                 }
             }
-            if (url == null)
-            {
-            	url = getClass().getResource(uri);
-            	if (url == null)
-            		LOGGER.warning("can't parse " + uri + " as a java resource present in the classpath");
+
+            if (icon == null) {
+                LOGGER.warning("returning empty icon");
+                icon = EmptyIcon.INSTANCE;
+            }
+
+            extgraph = factory.createExternalGraphic(icon, format);
+        } else {
+            URL url = null;
+            try {
+                url = new URL(uri);
+            } catch (MalformedURLException mfe) {
+                LOGGER.fine("Looks like " + uri + " is a relative path..");
+                if (sourceUrl != null) {
+                    try {
+                        url = new URL(sourceUrl, uri);
+                    } catch (MalformedURLException e) {
+                        LOGGER.warning("can't parse " + uri + " as relative to"
+                                + sourceUrl.toExternalForm());
+                    }
+                }
+                if (url == null)
+                {
+                    url = getClass().getResource(uri);
+                    if (url == null)
+                        LOGGER.warning("can't parse " + uri + " as a java resource present in the classpath");
+                }
+            }
+            if (url == null) {
+                extgraph = factory.createExternalGraphic(uri, format);
+            } else {
+                extgraph = factory.createExternalGraphic(url, format);
             }
         }
 
-        ExternalGraphic extgraph;
-        if (url == null) {
-            extgraph = factory.createExternalGraphic(uri, format);
-        } else {
-            extgraph = factory.createExternalGraphic(url, format);
-        }
         extgraph.setCustomProperties(paramList);
         return extgraph;
     }
