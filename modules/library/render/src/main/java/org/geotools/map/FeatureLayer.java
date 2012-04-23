@@ -61,6 +61,11 @@ public class FeatureLayer extends StyleLayer {
     /** Listener to forward feature source events as layer events */
     protected FeatureListener sourceListener;
 
+    protected boolean drawLabels = true;
+    protected Double labelMinScaleDenominator;
+    protected Double labelMaxScaleDenominator;
+    protected Float labelOpacity;
+
     /**
      * Creates a new instance of FeatureLayer
      * 
@@ -183,6 +188,40 @@ public class FeatureLayer extends StyleLayer {
     public void setQuery(Query query) {
         this.query = query;
         fireMapLayerListenerLayerChanged(MapLayerEvent.FILTER_CHANGED);
+    }
+    
+    public boolean getDrawLabels() {
+        return drawLabels;
+    }
+    
+    public boolean getDrawLabelsAtScale(double scaleDenominator) {
+        if (labelMinScaleDenominator != null && scaleDenominator < labelMinScaleDenominator) {
+            return false;
+        }
+        if (labelMaxScaleDenominator != null && scaleDenominator > labelMaxScaleDenominator) {
+            return false;
+        }
+        return true;
+    }
+    
+    public void setDrawLabels(boolean drawLabels) {
+        this.drawLabels = drawLabels;
+    }
+    
+    public void setLabelMinScaleDenominator(Double labelMinScaleDenominator) {
+        this.labelMinScaleDenominator = labelMinScaleDenominator;
+    }
+    
+    public void setLabelMaxScaleDenominator(Double labelMaxScaleDenominator) {
+        this.labelMaxScaleDenominator = labelMaxScaleDenominator;
+    }
+
+    public Float getLabelOpacity() {
+        return labelOpacity;
+    }
+
+    public void setLabelOpacity(Float labelOpacity) {
+        this.labelOpacity = labelOpacity;
     }
 
     @Override

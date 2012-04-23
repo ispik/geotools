@@ -130,6 +130,11 @@ public interface Font extends org.opengis.style.Font{
      */
     void setFontSize(Expression size);
 
+
+    Expression getTextDecoration();
+
+    void setTextDecroration(Expression decoration);
+
     /**
      * Enumeration of allow font-style values.
      * <p>
