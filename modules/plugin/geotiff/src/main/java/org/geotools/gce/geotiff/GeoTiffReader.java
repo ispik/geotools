@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -77,6 +78,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.OverviewPolicy;
+import org.geotools.coverage.grid.io.TransparentColors;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffMetadata2CRSAdapter;
 import org.geotools.data.DataSourceException;
@@ -245,6 +247,7 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
 			if (closeMe&&inStream!=null)// 
 				try{
 					inStream.close();
+                    inStream = null;
 				}catch (Throwable t) {
 				}
 		}
@@ -451,7 +454,7 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
 	public GridCoverage2D read(GeneralParameterValue[] params) throws IOException {
 		GeneralEnvelope requestedEnvelope = null;
 		Rectangle dim = null;
-		Color inputTransparentColor=null;
+		Set<Color> inputTransparentColors=null;
 		OverviewPolicy overviewPolicy=null;
 		int[] suggestedTileSize=null;
 		if (params != null) {
@@ -474,9 +477,19 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
 						continue;
 					}	
                                         if (name.equals(AbstractGridFormat.INPUT_TRANSPARENT_COLOR.getName())) {
-                                            inputTransparentColor = (Color) param.getValue();
+                                            Color color = (Color) param.getValue();
+                                            if (color != null) {
+                                                inputTransparentColors = Collections.singleton(color);
+                                            }
                                             continue;
-                                        }	
+                                        }
+                                        if (name.equals(AbstractGridFormat.INPUT_TRANSPARENT_COLORS.getName())) {
+                                            TransparentColors transparentColors = (TransparentColors) param.getValue();
+                                            if (transparentColors != null) {
+                                                inputTransparentColors = transparentColors.getColors();
+                                            }
+                                            continue;
+                                        }
                                         if (name.equals(AbstractGridFormat.SUGGESTED_TILE_SIZE.getName())) {
                                             String suggestedTileSize_= (String) param.getValue();
                                             if(suggestedTileSize_!=null&&suggestedTileSize_.length()>0){
@@ -544,8 +557,8 @@ public class GeoTiffReader extends AbstractGridCoverage2DReader implements GridC
                 //
                 // MASKING INPUT COLOR as indicated
                 //
-		if(inputTransparentColor!=null){
-		    coverageRaster= new ImageWorker(coverageRaster).setRenderingHints(newHints).makeColorTransparent(inputTransparentColor).getRenderedOperation();
+		if(inputTransparentColors!=null){
+		    coverageRaster= new ImageWorker(coverageRaster).setRenderingHints(newHints).makeColorsTransparent(inputTransparentColors).getRenderedOperation();
 		}
 		
 		//

@@ -33,6 +33,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.DecimationPolicy;
 import org.geotools.coverage.grid.io.OverviewPolicy;
+import org.geotools.coverage.grid.io.TransparentColors;
 import org.geotools.data.DataSourceException;
 import org.geotools.factory.Hints;
 import org.geotools.geometry.GeneralEnvelope;
@@ -122,7 +123,7 @@ class RasterLayerRequest {
      */
     private boolean empty;
 
-	private Color inputTransparentColor=AbstractGridFormat.INPUT_TRANSPARENT_COLOR.getDefaultValue();;
+	private TransparentColors inputTransparentColors=AbstractGridFormat.INPUT_TRANSPARENT_COLORS.getDefaultValue();
 
 	private boolean blend=ImageMosaicFormat.FADING.getDefaultValue();
 
@@ -336,16 +337,17 @@ class RasterLayerRequest {
 	        if (name.equals(AbstractGridFormat.INPUT_TRANSPARENT_COLOR.getName())) {
 	        	if(value==null)
 	        		continue;
-				inputTransparentColor = (Color) value;
-				// paranoiac check on the provided transparent color
-				inputTransparentColor = new Color(
-						inputTransparentColor.getRed(),
-						inputTransparentColor.getGreen(), 
-						inputTransparentColor.getBlue());
+				inputTransparentColors = new TransparentColors();
+                inputTransparentColors.addColor((Color) value);
 				continue;
 	
 			} 
 	
+            if (name.equals(AbstractGridFormat.INPUT_TRANSPARENT_COLORS.getName())) {
+                inputTransparentColors = (TransparentColors) value;
+                continue;
+            }
+
 			if (name.equals(ImageMosaicFormat.FADING.getName())) {
 	        	if(value==null)
 	        		continue;
@@ -541,15 +543,16 @@ class RasterLayerRequest {
         	final Object value = param.getValue();
         	if(value==null)
         		return;
-			inputTransparentColor = (Color) value;
-			// paranoiac check on the provided transparent color
-			inputTransparentColor = new Color(
-					inputTransparentColor.getRed(),
-					inputTransparentColor.getGreen(), 
-					inputTransparentColor.getBlue());
+			inputTransparentColors = new TransparentColors();
+            inputTransparentColors.addColor((Color) value);
 			return;
 
 		} 
+
+        if (name.equals(AbstractGridFormat.INPUT_TRANSPARENT_COLORS.getName())) {
+            inputTransparentColors = (TransparentColors) param.getValue();
+            return;
+        }
 
 		if (name.equals(ImageMosaicFormat.FADING.getName())) {
         	final Object value = param.getValue();
@@ -1282,8 +1285,8 @@ class RasterLayerRequest {
 		return requestedResolution!=null?requestedResolution.clone():null;
 	}
 
-	public Color getInputTransparentColor() {
-		return inputTransparentColor;
+	public TransparentColors getInputTransparentColors() {
+		return inputTransparentColors;
 	}
 
 	public Color getOutputTransparentColor() {
