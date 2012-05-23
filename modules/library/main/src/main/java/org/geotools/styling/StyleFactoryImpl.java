@@ -70,10 +70,19 @@ public class StyleFactoryImpl extends AbstractStyleFactory
     private StyleFactoryImpl2 delegate;
     
     public StyleFactoryImpl() {
-        this( CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints()));
+        this(NORMAL_PRIORITY);
+    }
+
+    protected StyleFactoryImpl(int priority) {
+        this(priority, CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints()));
     }
 
     protected StyleFactoryImpl(FilterFactory2 factory) {
+        this(NORMAL_PRIORITY, factory);
+    }
+
+    protected StyleFactoryImpl(int priority, FilterFactory2 factory) {
+        super(priority);
         filterFactory = factory;
         delegate = new StyleFactoryImpl2( filterFactory );
     }
