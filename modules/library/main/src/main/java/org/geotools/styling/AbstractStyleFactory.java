@@ -24,6 +24,7 @@ import java.util.Map;
 import org.geotools.factory.AbstractFactory;
 import org.opengis.filter.expression.Expression;
 
+import javax.swing.Icon;
 
 /**
  * Abstract base class for implementing style factories.
@@ -40,6 +41,8 @@ public abstract class AbstractStyleFactory extends AbstractFactory implements St
 
     public abstract ExternalGraphic createExternalGraphic(String uri,
         String format);
+
+    public abstract ExternalGraphic createExternalGraphic(Icon inlineContent, String format);
 
     public abstract AnchorPoint createAnchorPoint(Expression x, Expression y);
 
