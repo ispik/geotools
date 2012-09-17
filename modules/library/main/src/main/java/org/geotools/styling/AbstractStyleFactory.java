@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
+import org.geotools.factory.AbstractFactory;
 import org.opengis.filter.expression.Expression;
 
 
@@ -30,7 +31,7 @@ import org.opengis.filter.expression.Expression;
  *
  * @source $URL$
  */
-public abstract class AbstractStyleFactory implements StyleFactory {
+public abstract class AbstractStyleFactory extends AbstractFactory implements StyleFactory {
     public abstract TextSymbolizer createTextSymbolizer(Fill fill,
         Font[] fonts, Halo halo, Expression label,
         LabelPlacement labelPlacement, String geometryPropertyName);
@@ -234,6 +235,13 @@ public abstract class AbstractStyleFactory implements StyleFactory {
     public abstract Font getDefaultFont();
 
     public abstract PointPlacement getDefaultPointPlacement();
+
+    protected AbstractStyleFactory() {
+    }
+
+    protected AbstractStyleFactory(int priority) {
+        super(priority);
+    }
 
     /**
      * Returns implementation hints for this factory. The default
