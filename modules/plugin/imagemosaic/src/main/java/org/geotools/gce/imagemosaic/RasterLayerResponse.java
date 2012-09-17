@@ -67,6 +67,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.TransparentColors;
 import org.geotools.data.DataSourceException;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
@@ -329,7 +330,7 @@ class RasterLayerResponse{
 		private final List<Future<GranuleLoadingResult>> tasks= new ArrayList<Future<GranuleLoadingResult>>();
 		private int   granulesNumber;
 		private List<ROI> rois = new ArrayList<ROI>();
-		private Color inputTransparentColor;
+		private TransparentColors inputTransparentColors;
 		private PlanarImage[] alphaChannels;
 		private RasterLayerRequest request;
         
@@ -390,8 +391,8 @@ class RasterLayerResponse{
 			// reusable parameters
 			alphaChannels = new PlanarImage[granulesNumber];
 			int granuleIndex=0;
-			inputTransparentColor = request.getInputTransparentColor();
-			doInputTransparency = inputTransparentColor != null&&!footprintManagement;
+			inputTransparentColors = request.getInputTransparentColors();
+			doInputTransparency = inputTransparentColors != null&&!footprintManagement;
 			// execute them all
 			boolean firstGranule=true;
 			int[] alphaIndex=null;
@@ -489,7 +490,7 @@ class RasterLayerResponse{
 						alphaIn, 
 						alphaChannels, 
 						doInputTransparency,
-						inputTransparentColor);
+						inputTransparentColors);
 				
 				// we need to add its roi in order to avoid problems with the mosaic overlapping
 				Rectangle bounds = PlanarImage.wrapRenderedImage(raster).getBounds();
@@ -1054,7 +1055,7 @@ class RasterLayerResponse{
 			final int[] alphaIndex,
 			final boolean alphaIn,
 			final PlanarImage[] alphaChannels,
-			final boolean doTransparentColor, final Color transparentColor) {
+			final boolean doTransparentColor, final TransparentColors transparentColors) {
 
 		//
 		// INDEX COLOR MODEL EXPANSION
@@ -1089,7 +1090,7 @@ class RasterLayerResponse{
 		if (doTransparentColor) {
 			if (LOGGER.isLoggable(Level.FINE))
 				LOGGER.fine("Support for alpha on input image number "+ granuleIndex);
-			granule = ImageUtilities.maskColor(transparentColor, granule);
+			granule = ImageUtilities.maskColors(transparentColors.getColors(), granule);
 			alphaIndex[0]= granule.getColorModel().getNumComponents() - 1 ;
 		}
 		//

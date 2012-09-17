@@ -188,6 +188,9 @@ public abstract class AbstractGridFormat implements Format {
     public static final ParameterDescriptor<Color> INPUT_TRANSPARENT_COLOR = new DefaultParameterDescriptor<Color>(
                 "InputTransparentColor", Color.class, null, null);
     
+    public static final ParameterDescriptor<TransparentColors> INPUT_TRANSPARENT_COLORS = new DefaultParameterDescriptor<TransparentColors>(
+                "InputTransparentColors", TransparentColors.class, null, null);
+    
     /** Control the background color to be used where the input was transparent */
     public static final ParameterDescriptor<Color> BACKGROUND_COLOR = new DefaultParameterDescriptor<Color>(
                 "BackgroundColor", Color.class, null, null);
