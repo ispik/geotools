@@ -90,8 +90,8 @@ class IntegratingLabelCache implements LabelCache {
         //
     }
 
-    public void startLayer(String layerId) {
-        wrapped.startLayer(layerId);
+    public void startLayer(String layerId, Float labelsOpacity) {
+        wrapped.startLayer(layerId, labelsOpacity);
     }
 
     public void stop() {

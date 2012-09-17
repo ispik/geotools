@@ -33,6 +33,8 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -704,9 +706,7 @@ public class SLDStyleFactory {
 		ts2d.setLabel(label);
 
 		// get the sequence of fonts to be used and set the first one available
-		Font[] fonts = symbolizer.getFonts();
-		java.awt.Font javaFont = getFont(feature, fonts);
-		ts2d.setFont(javaFont);
+        setFont(ts2d, feature, symbolizer);
 
 		// compute label position, anchor, rotation and displacement
 		LabelPlacement placement = symbolizer.getLabelPlacement();
@@ -816,20 +816,8 @@ public class SLDStyleFactory {
 		return (Geometry) property.evaluate(feature, Geometry.class);
 	}
 
-    /**
-     * Returns the first font associated to the feature that can be found on the
-     * current machine
-     *
-     * @param feature
-     *            The feature whose font is to be found
-     * @param fonts
-     *            An array of fonts dependent of the feature, the first that is
-     *            found on the current machine is returned
-     *
-     * @return The first of the specified fonts found on this machine or null if
-     *         none found
-     */
-    private java.awt.Font getFont(Object feature, Font[] fonts) {
+    private void setFont(TextStyle2D ts2d, Object feature, TextSymbolizer symbolizer) {
+        Font[] fonts = symbolizer.getFonts();
 
         // try to build a font using the full spec
         if (fonts != null) {
@@ -838,28 +826,29 @@ public class SLDStyleFactory {
                 Font curr = fonts[k];
                 String requestedFont = evalToString(curr.getFontFamily(),
                         feature, null);
-                java.awt.Font javaFont = FontCache.getDefaultInstance().getFont(
-                        requestedFont);
+                java.awt.Font javaFont = FontCache.getDefaultInstance()
+                        .getFont(requestedFont);
 
                 if (javaFont != null) {
-                    return styleFont(feature, curr, javaFont);
+                    styleFont(ts2d, feature, curr, javaFont);
+                    return;
                 }
             }
         }
 
         // could not find the requested font, see if we can at least use the
         // requested styling
-        java.awt.Font result = new java.awt.Font("Serif", java.awt.Font.PLAIN,
+        java.awt.Font curr = new java.awt.Font("Serif", java.awt.Font.PLAIN,
                 12);
 
         if ((fonts != null) && (fonts.length > 0)) {
-            return styleFont(feature, fonts[0], result);
+            styleFont(ts2d, feature, fonts[0], curr);
         } else {
-            return result;
+            ts2d.setFont(curr);
         }
-    }
+    }    
 
-    private java.awt.Font styleFont(Object feature, Font curr,
+    private void styleFont(TextStyle2D ts2d, Object feature, Font curr,
         java.awt.Font javaFont) {
         String reqStyle = evalToString(curr.getFontStyle(), feature, null);
 
@@ -877,9 +866,23 @@ public class SLDStyleFactory {
             styleCode = styleCode | java.awt.Font.BOLD;
         }
 
-        float size = evalToFloat(curr.getSize(), feature, 10);
+        float size = evalToFloat(curr.getFontSize(), feature, 10);
 
-        return javaFont.deriveFont(styleCode, size);
+        ts2d.setFont(javaFont.deriveFont(styleCode, size));
+        String decorationsString = evalToString(curr.getTextDecoration(), feature,
+                null);
+        if (decorationsString != null) {
+            String[] splitted = decorationsString.split("\\s+");
+            Set<TextDecoration> decorations = EnumSet.noneOf(TextDecoration.class);
+            for (String s : splitted) {
+                if ("underline".equalsIgnoreCase(s)) {
+                    decorations.add(TextDecoration.UNDERLINE);
+                } else if ("line-through".equalsIgnoreCase(s)) {
+                    decorations.add(TextDecoration.LINE_THROUGH);
+                }
+            }
+            ts2d.setDecorations(Collections.unmodifiableSet(decorations));
+        }        
     }
 
 	void setScaleRange(Style style, Range scaleRange) {

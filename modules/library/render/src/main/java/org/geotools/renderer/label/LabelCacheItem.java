@@ -86,6 +86,10 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
     
     int[] graphicMargin = null;
 
+    boolean shadowHalo = false;
+
+    float opacity = 1.0f;
+
     public double getGoodnessOfFit() {
         return goodnessOfFit;
     }
@@ -322,7 +326,11 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(LabelCacheItem other) {
-        return Double.compare(this.getPriority(), other.getPriority());
+        int c = Double.compare(getPriority(), other.getPriority());
+        if (c == 0) {
+            return Float.compare(getOpacity(), other.getOpacity());
+        }
+        return c;
     }
 
     /**
@@ -381,6 +389,21 @@ public class LabelCacheItem implements Comparable<LabelCacheItem> {
     PolygonAlignOptions getPolygonAlign() {
         return polygonAlign;
     }
+
+    public boolean isShadowHalo() {
+        return shadowHalo;
+    }
+
+    public void setShadowHalo(boolean shadowHalo) {
+        this.shadowHalo = shadowHalo;
+    }
     
+    public float getOpacity() {
+        return opacity;
+    }
+
+    public void setOpacity(float opacity) {
+        this.opacity = opacity;
+    }
 }
 
